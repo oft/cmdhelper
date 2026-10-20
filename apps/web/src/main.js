@@ -9,7 +9,7 @@ const scenarioIds={scp:'upload-file',ssh:'login'};
 function currentScenario(){return getCommand(selected).scenarios.find(s=>s.id===scenarioIds[selected]);}
 function currentOutput(){return scenarioIds[selected]?generateScenario(selected,scenarioIds[selected],values[selected],shell):generate(selected,values[selected],shell);}
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function route(){const [page='assistant',slug]=location.hash.slice(2).split('/');return {page,slug};}
+function route(){const [page,slug]=location.hash.slice(2).split('/');return {page:page||'assistant',slug};}
 function render(){
  const {page,slug}=route();
  app.innerHTML=`<header><a class="brand" href="#/assistant"><span class="logo">&gt;_</span> cmdhelper</a><nav aria-label="主导航">${[['assistant','命令助手'],['problems','问题导航'],['articles','文章'],['about','关于']].map(([id,label])=>`<a ${page===id?'aria-current="page"':''} href="#/${id}">${label}</a>`).join('')}</nav><span class="header-note">少记参数，多做事情</span></header><main id="main"></main><footer>cmdhelper / 开放的命令参考工具 <span>仅生成命令 · 不自动执行</span></footer>`;
