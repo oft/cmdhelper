@@ -31,7 +31,13 @@ pnpm build
 
 ## GitHub Pages
 
-目标： https://oft.github.io/cmdhelper/ 。Vite base 固定为 `/cmdhelper/`。将仓库放在 `oft/cmdhelper`，默认分支为 `main`，在 Settings → Pages → Source 选择 GitHub Actions。工作流安装依赖、测试并生成 `/docs`，上传该目录为 Pages artifact 后部署，不向仓库提交构建产物。也可手动构建并将 `docs` 提交，使用分支 `/docs` 部署（二选一）。
+目标： https://oft.github.io/cmdhelper/ 。Vite base 固定为 `/cmdhelper/`。仓库为 `oft/cmdhelper`，默认分支为 `main`。
+
+1. 首次运行前，在仓库 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**。
+2. 推送到 `main`，或在 **Actions → Build and deploy Pages → Run workflow** 手动运行。工作流安装依赖、测试并生成 `docs/`，上传该目录为 Pages artifact，再由部署任务发布。
+3. 如果 `configure-pages` 报 `Get Pages site failed` / `Not Found`，先完成第 1 步，再重新运行工作流。默认 `GITHUB_TOKEN` 不能自动首次启用 Pages，直接添加 `enablement: true` 仍需要额外的授权令牌。
+
+使用此工作流时无需提交生成的 `docs/`。若选择手动构建并提交 `docs/`，则在 Source 选择 **Deploy from a branch**，指定 `main` 的 `/docs`，并停用此工作流；两种发布方式选择一种，避免重复部署。
 
 ## npm 发布准备
 
