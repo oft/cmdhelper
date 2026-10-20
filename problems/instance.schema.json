@@ -1,8 +1,299 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "cmdhelper 标准问题实例 v0.1",
   "type": "object",
-  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "title": "校验模型",
+      "description": "供 IDE 解析的 JSON Schema 地址；本地地址相对于当前 JSON 文件。",
+      "type": "string",
+      "minLength": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+      "title": "唯一标识",
+      "description": "以英文字母开头，仅含字母、数字、下划线和连字符；在所属集合中唯一。",
+      "examples": [
+        "scp",
+        "upload-file"
+      ]
+    },
+    "templateId": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+      "title": "模板引用",
+      "description": "引用标准问题模型中已定义的模板标识。"
+    },
+    "utterance": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "原始问题",
+      "description": "保留用户原始的自然语言问题。",
+      "examples": [
+        "我想发送一句话给另一台机器"
+      ]
+    },
+    "entities": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+            "title": "唯一标识",
+            "description": "以英文字母开头，仅含字母、数字、下划线和连字符；在所属集合中唯一。",
+            "examples": [
+              "scp",
+              "upload-file"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "device",
+              "file",
+              "directory",
+              "short-text",
+              "video",
+              "service",
+              "repository"
+            ],
+            "title": "实体类型",
+            "description": "device 设备、file 文件、directory 目录、short-text 短文本、video 视频、service 服务、repository 仓库。"
+          },
+          "label": {
+            "title": "显示名称",
+            "description": "字段、条件、实体或维度选项的用户可读名称。",
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "id",
+          "type"
+        ],
+        "additionalProperties": false
+      },
+      "title": "问题实体",
+      "description": "列出参与问题的设备、文件等实体及其稳定标识。"
+    },
+    "initialState": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      },
+      "title": "初始状态",
+      "description": "逐项描述执行前已知的状态。"
+    },
+    "goal": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      },
+      "title": "目标状态",
+      "description": "说明用户希望达到的状态；实例中使用列表。"
+    },
+    "invariants": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      },
+      "title": "保持不变的约束",
+      "description": "执行过程中必须持续满足的限制，例如源文件不能删除。"
+    },
+    "resources": {
+      "type": "object",
+      "properties": {
+        "setup": {
+          "type": "string",
+          "enum": [
+            "unknown",
+            "none",
+            "small",
+            "flexible"
+          ],
+          "title": "准备投入",
+          "description": "unknown 未确认、none 不愿准备、small 少量准备、flexible 可灵活投入。"
+        },
+        "install": {
+          "type": "string",
+          "enum": [
+            "unknown",
+            "no",
+            "yes"
+          ],
+          "title": "允许安装",
+          "description": "unknown 未确认、no 不允许、yes 允许；允许安装不代表已经安装。"
+        },
+        "configure": {
+          "type": "string",
+          "enum": [
+            "unknown",
+            "no",
+            "yes"
+          ],
+          "title": "允许配置",
+          "description": "unknown 未确认、no 不允许、yes 允许修改配置。"
+        },
+        "physical": {
+          "type": "string",
+          "enum": [
+            "unknown",
+            "yes",
+            "no"
+          ],
+          "title": "能够接触目标设备",
+          "description": "unknown 未确认、yes 可以直接操作、no 无法直接操作。"
+        },
+        "channel": {
+          "type": "string",
+          "enum": [
+            "unknown",
+            "yes",
+            "no"
+          ],
+          "title": "已有传递渠道",
+          "description": "unknown 未确认、yes 有可用且获准使用的渠道、no 没有。"
+        },
+        "toolReady": {
+          "type": "string",
+          "enum": [
+            "unknown",
+            "yes",
+            "no"
+          ],
+          "title": "工具已就绪",
+          "description": "unknown 未确认、yes 已具备所需环境、no 尚未就绪。"
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "unknown",
+            "quick",
+            "repeat"
+          ],
+          "title": "优先级",
+          "description": "检查树中为非负整数，数值越小越优先；资源中为 unknown 未确认、quick 尽快完成、repeat 重复使用。"
+        },
+        "frequency": {
+          "type": "string",
+          "enum": [
+            "unknown",
+            "once",
+            "repeat"
+          ],
+          "title": "使用频率",
+          "description": "unknown 未确认、once 一次性任务、repeat 重复任务。"
+        }
+      },
+      "required": [
+        "setup",
+        "install",
+        "configure",
+        "physical",
+        "channel",
+        "toolReady",
+        "priority",
+        "frequency"
+      ],
+      "additionalProperties": false,
+      "title": "可投入资源",
+      "description": "记录用户允许的投入和已有条件；unknown 不能视为允许或条件已满足。"
+    },
+    "evidence": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "title": "事实值",
+            "description": "字符串、有限数值、布尔值或 null；未确认事实可为 null。",
+            "type": [
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "user",
+              "inferred",
+              "observed"
+            ],
+            "title": "信息来源",
+            "description": "工具和方案中填写官方 HTTP(S) 文档地址；证据中填写 user 用户确认、inferred 推断或 observed 观察。"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "confirmed"
+            ],
+            "title": "证据状态",
+            "description": "unknown 未确认、confirmed 已确认；已确认事实不能为 null，也不能仅来自推断。"
+          },
+          "note": {
+            "title": "证据备注",
+            "description": "补充事实来源、观察过程或尚未确认的原因。",
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "value",
+          "source",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "title": "事实证据",
+      "description": "按事实标识记录值、来源、确认状态及可选备注。"
+    },
+    "acceptance": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      },
+      "title": "验收要求",
+      "description": "说明如何确认目标达成；方案中使用可检查条件，实例和路线中使用结果描述。"
+    },
+    "selectedRoute": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "选中路线",
+      "description": "必须属于所引用模板的路线；尚未选择时填写 null。"
+    }
+  },
   "required": [
     "id",
     "templateId",
@@ -13,175 +304,8 @@
     "invariants",
     "resources",
     "evidence",
-    "acceptance"
+    "acceptance",
+    "selectedRoute"
   ],
-  "properties": {
-    "id": {
-      "type": "string",
-      "minLength": 1
-    },
-    "templateId": {
-      "type": "string",
-      "minLength": 1
-    },
-    "utterance": {
-      "type": "string",
-      "minLength": 1
-    },
-    "entities": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "id",
-          "type"
-        ],
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "type": {
-            "enum": [
-              "device",
-              "file",
-              "directory",
-              "short-text",
-              "video",
-              "service"
-            ]
-          },
-          "label": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      }
-    },
-    "initialState": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "goal": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "invariants": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "acceptance": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "resources": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "setup": {
-          "enum": [
-            "unknown",
-            "none",
-            "small",
-            "flexible"
-          ]
-        },
-        "install": {
-          "enum": [
-            "unknown",
-            "no",
-            "yes"
-          ]
-        },
-        "configure": {
-          "enum": [
-            "unknown",
-            "no",
-            "yes"
-          ]
-        },
-        "physical": {
-          "enum": [
-            "unknown",
-            "yes",
-            "no"
-          ]
-        },
-        "channel": {
-          "enum": [
-            "unknown",
-            "yes",
-            "no"
-          ]
-        },
-        "toolReady": {
-          "enum": [
-            "unknown",
-            "yes",
-            "no"
-          ]
-        },
-        "priority": {
-          "enum": [
-            "unknown",
-            "quick",
-            "repeat"
-          ]
-        },
-        "frequency": {
-          "enum": [
-            "unknown",
-            "once",
-            "repeat"
-          ]
-        }
-      }
-    },
-    "evidence": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "object",
-        "required": [
-          "value",
-          "source",
-          "status"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "value": {},
-          "source": {
-            "enum": [
-              "user",
-              "inferred",
-              "observed"
-            ]
-          },
-          "status": {
-            "enum": [
-              "unknown",
-              "confirmed"
-            ]
-          },
-          "note": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "selectedRoute": {
-      "type": [
-        "string",
-        "null"
-      ]
-    }
-  }
+  "additionalProperties": false
 }

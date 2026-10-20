@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
-import { commands, getCommand, generate, search, validate } from '@cmdhelper/core';
+import { commands, getCommand, generate, generateScenario, getScenarioFields, search, validate } from '@cmdhelper/core';
 const args = process.argv.slice(2);
 async function main() {
   if (args.includes('--help') || args.includes('-h')) {
-    console.log('cmdhelper [scp|ssh] [--shell posix|powershell]\ncmdhelper search <关键词>\ncmdhelper explain <命令>\n逐步填写参数，只生成命令，不执行。输入留空跳过可选项，布尔项输入 y 启用。'); return;
+    console.log('cmdhelper [scp|ssh|git|curl] [--shell posix|powershell]\ncmdhelper search <关键词>\ncmdhelper explain <命令>\n逐步填写参数，只生成命令，不执行。输入留空跳过可选项，布尔项输入 y 启用。'); return;
   }
   if (args[0] === 'search') {
     for (const {command:c,matches} of search(args.slice(1).join(' '))) console.log(`${c.id} — ${c.description}\n${matches.map(f=>`  ${f.flag ?? f.id} ${f.label}：${f.description}`).join('\n')}`);
@@ -13,7 +13,7 @@ async function main() {
   }
   if (args[0] === 'explain') {
     const c=getCommand(args[1]); if(!c) throw Error('未知命令');
-    console.log(`${c.id}：${c.description}\n${c.fields.map(f=>`${f.flag ?? f.id} ${f.label}：${f.description}`).join('\n')}\n${c.notes.join('\n')}\n${c.source}`);return;
+    console.log(`${c.id}：${c.description}\n场景：${c.scenarios.map(s=>s.title).join(' / ')}\n${c.fields.map(f=>`${f.flag ?? f.id} ${f.label}：${f.description}`).join('\n')}\n${c.notes.join('\n')}\n${c.source}`);return;
   }
   const shellIndex=args.indexOf('--shell');
   const shell=shellIndex>=0?args[shellIndex+1]:(process.platform==='win32'?'powershell':'posix');
@@ -26,7 +26,13 @@ async function main() {
     const id=positional[0] || (await rl.question(`选择命令 (${commands.map(c=>c.id).join('/')})：`)).trim();
     const c=getCommand(id);if(!c) throw Error('暂不支持该命令');
     console.log(`\n${c.description}\n`); const values={};
-    for(const f of c.fields) {
+    let scenario;
+    if(c.scenarioOnly){
+      console.log(c.scenarios.map((s,i)=>`${i+1}. ${s.title} (${s.id})`).join('\n'));
+      while(!scenario){const choice=(await rl.question('选择场景（编号或标识）：')).trim();scenario=c.scenarios.find((s,i)=>s.id===choice||String(i+1)===choice);if(!scenario)console.log('请选择列表中的场景');}
+      Object.assign(values,scenario.defaults);
+    }
+    for(const f of getScenarioFields(c,scenario)) {
       while(true) {
         const answer=(await rl.question(`${f.flag ?? f.id} ${f.label}${f.required?' *':''}\n  ${f.description}\n  ${f.kind==='boolean'?'启用？[y/N]':f.placeholder+'（可选项留空跳过）'} > `)).trim();
         values[f.id]=f.kind==='boolean'?/^(y|yes)$/i.test(answer):answer;
@@ -34,7 +40,7 @@ async function main() {
         if(!errors.length) break; console.log(errors.join('\n'));
       }
     }
-    console.log(`\n生成命令（${shell}）：\n${generate(id,values,shell)}\n`);
+    console.log(`\n生成命令（${shell}）：\n${scenario?generateScenario(id,scenario.id,values,shell):generate(id,values,shell)}\n`);
   } finally {rl.close();}
 }
 main().catch(e=>{console.error(e.message);process.exitCode=1;});

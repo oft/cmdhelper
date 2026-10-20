@@ -1,0 +1,528 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "title": "校验模型",
+      "description": "供 IDE 解析的 JSON Schema 地址；本地地址相对于当前 JSON 文件。",
+      "type": "string",
+      "minLength": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+      "title": "唯一标识",
+      "description": "以英文字母开头，仅含字母、数字、下划线和连字符；在所属集合中唯一。",
+      "examples": [
+        "scp",
+        "upload-file"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "标题",
+      "description": "展示给用户的简短中文名称。"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "详细说明",
+      "description": "说明用途、适用范围和填写要求，不能仅为空白。"
+    },
+    "source": {
+      "type": "string",
+      "format": "uri",
+      "title": "信息来源",
+      "description": "工具和方案中填写官方 HTTP(S) 文档地址；证据中填写 user 用户确认、inferred 推断或 observed 观察。"
+    },
+    "notes": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      },
+      "title": "使用提示",
+      "description": "列出命令的限制、注意事项和适用条件。"
+    },
+    "fields": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+            "title": "唯一标识",
+            "description": "以英文字母开头，仅含字母、数字、下划线和连字符；在所属集合中唯一。",
+            "examples": [
+              "scp",
+              "upload-file"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "title": "显示名称",
+            "description": "字段、条件、实体或维度选项的用户可读名称。"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "title": "详细说明",
+            "description": "说明用途、适用范围和填写要求，不能仅为空白。"
+          },
+          "flag": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^--?[A-Za-z][A-Za-z0-9-]*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "命令选项",
+            "description": "带 - 或 -- 的选项名；位置参数填写 null。",
+            "examples": [
+              "-P",
+              "--output",
+              null
+            ]
+          },
+          "required": {
+            "type": "boolean",
+            "title": "必填要求",
+            "description": "字段定义中使用布尔值；场景中列出额外必填的字段标识。"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "text",
+              "boolean",
+              "port",
+              "positive"
+            ],
+            "title": "类型",
+            "description": "参数类型：text 文本、boolean 开关、port 端口、positive 正整数；条件类型：condition 环境条件、platform 平台、installation 安装。"
+          },
+          "placeholder": {
+            "type": "string",
+            "title": "填写提示",
+            "description": "输入框的示例文本，仅用于提示，不作为实际输入。"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "description",
+          "flag",
+          "required",
+          "kind",
+          "placeholder"
+        ],
+        "additionalProperties": false
+      },
+      "title": "参数字段",
+      "description": "命令中定义字段对象；场景中用字段标识列表限定显示及校验范围。"
+    },
+    "scenarios": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+            "title": "唯一标识",
+            "description": "以英文字母开头，仅含字母、数字、下划线和连字符；在所属集合中唯一。",
+            "examples": [
+              "scp",
+              "upload-file"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "title": "标题",
+            "description": "展示给用户的简短中文名称。"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "title": "详细说明",
+            "description": "说明用途、适用范围和填写要求，不能仅为空白。"
+          },
+          "defaults": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+            },
+            "additionalProperties": {
+              "type": [
+                "string",
+                "boolean"
+              ]
+            },
+            "title": "场景固定值",
+            "description": "按字段标识设置场景固定值，覆盖用户输入；场景型命令还需 action 等于场景标识。"
+          },
+          "labels": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "title": "场景名称覆盖",
+            "description": "按字段标识覆盖显示名称；未提供的字段继承基础名称，允许空对象。",
+            "examples": [
+              {}
+            ]
+          },
+          "placeholders": {
+            "title": "场景提示覆盖",
+            "description": "按字段标识覆盖填写提示；未提供时继承基础提示。",
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": {
+            "title": "必填要求",
+            "description": "字段定义中使用布尔值；场景中列出额外必填的字段标识。",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+            }
+          },
+          "fields": {
+            "title": "参数字段",
+            "description": "命令中定义字段对象；场景中用字段标识列表限定显示及校验范围。",
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+            }
+          },
+          "tokens": {
+            "title": "固定命令片段",
+            "description": "按顺序输出的固定命令片段，例如 Git 子命令；不要把用户输入放在这里。",
+            "examples": [
+              [
+                "pull",
+                "--ff-only"
+              ]
+            ],
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "sourceSuffix": {
+            "title": "源目录后缀",
+            "description": "固定为 /.，用于传输目录内容而不额外嵌套源目录。",
+            "examples": [
+              "/."
+            ],
+            "type": "string",
+            "const": "/."
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "before": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "title": "执行前",
+                "description": "说明执行前的位置、内容或状态；示例可用多行目录树。"
+              },
+              "after": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "title": "执行后",
+                "description": "说明成功执行后的预计状态及变化，不代表已实际执行或验证。"
+              },
+              "example": {
+                "title": "完整示例",
+                "description": "包含前提、参数、步骤及执行前后对比的独立示例。",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "\\S",
+                    "title": "标题",
+                    "description": "展示给用户的简短中文名称。"
+                  },
+                  "assumptions": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "pattern": "\\S"
+                    },
+                    "title": "示例前提",
+                    "description": "明确示例假设，避免把假设当成已检测的环境事实。"
+                  },
+                  "values": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+                    },
+                    "additionalProperties": {
+                      "type": [
+                        "string",
+                        "boolean"
+                      ]
+                    },
+                    "title": "参数或坐标值",
+                    "description": "以字段或维度标识为键的映射；示例参数必须满足对应场景要求。"
+                  },
+                  "before": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "\\S",
+                    "title": "执行前",
+                    "description": "说明执行前的位置、内容或状态；示例可用多行目录树。"
+                  },
+                  "after": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "\\S",
+                    "title": "执行后",
+                    "description": "说明成功执行后的预计状态及变化，不代表已实际执行或验证。"
+                  },
+                  "steps": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "pattern": "\\S"
+                    },
+                    "title": "执行步骤",
+                    "description": "按先后顺序列出可操作的步骤。"
+                  },
+                  "takeaways": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "pattern": "\\S"
+                    },
+                    "title": "变化要点",
+                    "description": "列出示例中需要用户关注的变化与保留内容。"
+                  }
+                },
+                "required": [
+                  "title",
+                  "assumptions",
+                  "values",
+                  "before",
+                  "after",
+                  "steps",
+                  "takeaways"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "before",
+              "after"
+            ],
+            "additionalProperties": false,
+            "title": "结果说明",
+            "description": "列出成功执行前后的状态，并可提供完整示例。"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "defaults",
+          "labels",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "title": "使用场景",
+      "description": "用户先选择具体任务，再填写该场景需要的参数。"
+    },
+    "scenarioOnly": {
+      "title": "仅允许场景模式",
+      "description": "为 true 时必须选择场景，不能使用自由参数模式。",
+      "type": "boolean"
+    },
+    "result": {
+      "type": "object",
+      "properties": {
+        "before": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "title": "执行前",
+          "description": "说明执行前的位置、内容或状态；示例可用多行目录树。"
+        },
+        "after": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "title": "执行后",
+          "description": "说明成功执行后的预计状态及变化，不代表已实际执行或验证。"
+        },
+        "example": {
+          "title": "完整示例",
+          "description": "包含前提、参数、步骤及执行前后对比的独立示例。",
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S",
+              "title": "标题",
+              "description": "展示给用户的简短中文名称。"
+            },
+            "assumptions": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "title": "示例前提",
+              "description": "明确示例假设，避免把假设当成已检测的环境事实。"
+            },
+            "values": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+              },
+              "additionalProperties": {
+                "type": [
+                  "string",
+                  "boolean"
+                ]
+              },
+              "title": "参数或坐标值",
+              "description": "以字段或维度标识为键的映射；示例参数必须满足对应场景要求。"
+            },
+            "before": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S",
+              "title": "执行前",
+              "description": "说明执行前的位置、内容或状态；示例可用多行目录树。"
+            },
+            "after": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S",
+              "title": "执行后",
+              "description": "说明成功执行后的预计状态及变化，不代表已实际执行或验证。"
+            },
+            "steps": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "title": "执行步骤",
+              "description": "按先后顺序列出可操作的步骤。"
+            },
+            "takeaways": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "title": "变化要点",
+              "description": "列出示例中需要用户关注的变化与保留内容。"
+            }
+          },
+          "required": [
+            "title",
+            "assumptions",
+            "values",
+            "before",
+            "after",
+            "steps",
+            "takeaways"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "before",
+        "after"
+      ],
+      "additionalProperties": false,
+      "title": "结果说明",
+      "description": "列出成功执行前后的状态，并可提供完整示例。"
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "description",
+    "source",
+    "notes",
+    "fields",
+    "scenarios",
+    "result"
+  ],
+  "additionalProperties": false
+}

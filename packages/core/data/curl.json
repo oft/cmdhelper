@@ -1,0 +1,255 @@
+{
+  "$schema": "../schemas/command.schema.json",
+  "id": "curl",
+  "title": "请求接口与下载文件",
+  "description": "通过 HTTP / HTTPS 获取响应、下载文件，或发送 JSON 请求。",
+  "scenarioOnly": true,
+  "source": "https://curl.se/docs/manpage.html",
+  "notes": [
+    "Windows PowerShell 输出 curl.exe，避免旧版 PowerShell 的 curl 别名；POSIX 输出 curl。",
+    "--json 需要 curl 7.82.0+；本助手从文件读取 JSON，不将完整 JSON 内联到 Shell。",
+    "--fail-with-body 需要 curl 7.76.0+；HTTP 4xx/5xx 返回失败，但响应正文仍可能输出或写入文件。",
+    "下载可能覆盖已有同名文件；发送 JSON 的接口可能修改服务器数据，先确认接口用途。"
+  ],
+  "fields": [
+    {
+      "id": "url",
+      "label": "请求地址",
+      "description": "填写完整 HTTP 或 HTTPS URL；查询参数包含在地址中。",
+      "flag": null,
+      "kind": "text",
+      "required": false,
+      "placeholder": "https://example.com/api/status"
+    },
+    {
+      "id": "output",
+      "label": "保存到哪个文件？",
+      "description": "指定本地输出文件，父目录需存在且可写；已有文件可能被覆盖。",
+      "flag": "--output",
+      "kind": "text",
+      "required": false,
+      "placeholder": "./download.zip"
+    },
+    {
+      "id": "jsonFile",
+      "label": "JSON 请求文件",
+      "description": "填写保存了合法 JSON 的 UTF-8 文件路径，自动加 @ 以读取文件。",
+      "flag": "--json",
+      "kind": "text",
+      "required": false,
+      "placeholder": "./payload.json"
+    },
+    {
+      "id": "header",
+      "label": "附加请求头",
+      "description": "一行一个值，此版支持一条自定义请求头；不要公开分享包含凭证的命令。",
+      "flag": "--header",
+      "kind": "text",
+      "required": false,
+      "placeholder": "Accept-Language: zh-CN"
+    },
+    {
+      "id": "timeout",
+      "label": "最长请求时间（秒）",
+      "description": "限制整个传输用时，正整数。",
+      "flag": "--max-time",
+      "kind": "positive",
+      "required": false,
+      "placeholder": "30"
+    },
+    {
+      "id": "location",
+      "label": "跟随重定向",
+      "description": "允许跟随 HTTP 重定向；JSON 场景不自动跟随，避免请求目标不明确。",
+      "flag": "--location",
+      "kind": "boolean",
+      "required": false,
+      "placeholder": ""
+    },
+    {
+      "id": "include",
+      "label": "显示响应头",
+      "description": "将响应头与正文一起输出到终端。",
+      "flag": "--include",
+      "kind": "boolean",
+      "required": false,
+      "placeholder": ""
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "get",
+      "title": "查询接口或网页内容",
+      "description": "发送 GET 请求，在终端查看响应正文。",
+      "fields": [
+        "url",
+        "header",
+        "timeout",
+        "location",
+        "include"
+      ],
+      "required": [
+        "url"
+      ],
+      "tokens": [
+        "--globoff",
+        "--fail-with-body"
+      ],
+      "defaults": {
+        "action": "get"
+      },
+      "labels": {},
+      "result": {
+        "before": [
+          "请求地址：{url}。",
+          "响应将显示在终端，不指定保存文件。"
+        ],
+        "after": [
+          "收到响应正文；启用显示响应头时同时展示响应头。",
+          "是否成功还需检查 HTTP 状态和响应业务字段；服务端可能记录此次访问。"
+        ],
+        "example": {
+          "title": "查询接口或网页内容",
+          "assumptions": [
+            "独立教学示例，不代表已读取你的仓库、文件或接口。",
+            "假设所需权限、软件、网络及目标环境可用。"
+          ],
+          "values": {
+            "url": "https://example.com/api/status",
+            "include": true
+          },
+          "steps": [
+            "确认 URL 和接口读取用途。",
+            "执行命令并查看状态与正文。",
+            "按接口约定判断业务成功。"
+          ],
+          "before": "本机终端：待请求\n服务端：可访问的接口",
+          "after": "本机终端：状态 / 响应正文\n本机：不创建下载文件",
+          "takeaways": [
+            "网络传输成功不等于业务操作成功。"
+          ]
+        }
+      }
+    },
+    {
+      "id": "download",
+      "title": "从网址下载文件到本机",
+      "description": "获取 URL 响应并保存到指定文件。",
+      "fields": [
+        "url",
+        "output",
+        "header",
+        "timeout",
+        "location"
+      ],
+      "required": [
+        "url",
+        "output"
+      ],
+      "tokens": [
+        "--globoff",
+        "--fail-with-body"
+      ],
+      "defaults": {
+        "action": "download"
+      },
+      "labels": {},
+      "result": {
+        "before": [
+          "下载来源：{url}。",
+          "本地输出：{output}；先确认覆盖策略。"
+        ],
+        "after": [
+          "把响应正文写入 {output}，可能覆盖已有文件。",
+          "网络失败可能留下部分文件，HTTP 错误正文也可能被保存；需检查退出状态和内容。"
+        ],
+        "example": {
+          "title": "从网址下载文件到本机",
+          "assumptions": [
+            "独立教学示例，不代表已读取你的仓库、文件或接口。",
+            "假设所需权限、软件、网络及目标环境可用。"
+          ],
+          "values": {
+            "url": "https://example.com/archive.zip",
+            "output": "./archive.zip",
+            "location": true
+          },
+          "steps": [
+            "核对来源地址和输出路径。",
+            "执行下载。",
+            "检查退出状态、文件类型及发布方校验和。"
+          ],
+          "before": "远程：archive.zip\n本机：待保存",
+          "after": "远程：保持原样\n本机：archive.zip（需核验内容）",
+          "takeaways": [
+            "下载成功后不自动执行或解压文件。"
+          ]
+        }
+      }
+    },
+    {
+      "id": "json",
+      "title": "把 JSON 文件发送给接口",
+      "description": "读取本地 JSON 文件，以 POST 请求发送并查看响应。",
+      "fields": [
+        "url",
+        "jsonFile",
+        "header",
+        "timeout",
+        "include"
+      ],
+      "required": [
+        "url",
+        "jsonFile"
+      ],
+      "tokens": [
+        "--globoff",
+        "--fail-with-body"
+      ],
+      "defaults": {
+        "action": "json"
+      },
+      "labels": {},
+      "result": {
+        "before": [
+          "接口：{url}，需确认允许发送的内容和预期效果。",
+          "JSON 文件：{jsonFile}，需存在且可读、格式合法。"
+        ],
+        "after": [
+          "以 POST 发送 JSON；本地 JSON 文件保留。",
+          "接口可能创建或修改服务端数据，具体效果由接口契约决定，需检查状态码和响应。"
+        ],
+        "example": {
+          "title": "把 JSON 文件发送给接口",
+          "assumptions": [
+            "独立教学示例，不代表已读取你的仓库、文件或接口。",
+            "假设所需权限、软件、网络及目标环境可用。"
+          ],
+          "values": {
+            "url": "https://example.com/api/items",
+            "jsonFile": "./payload.json"
+          },
+          "steps": [
+            "将请求数据保存为 UTF-8 的 payload.json。",
+            "检查 JSON 内容和接口权限。",
+            "执行请求并核对服务端实际结果。"
+          ],
+          "before": "本机：payload.json\n服务端：接口待接收",
+          "after": "本机：payload.json 保留\n服务端：处理请求，可能写入数据\n终端：返回响应",
+          "takeaways": [
+            "--json 设置 JSON 内容和 Accept 头，但不校验 JSON 格式。",
+            "不要在结果不明时盲目重发写入请求，先确认服务端是否已处理。"
+          ]
+        }
+      }
+    }
+  ],
+  "result": {
+    "before": [
+      "请先选择 curl 场景。"
+    ],
+    "after": [
+      "按所选场景说明具体变化。"
+    ]
+  }
+}

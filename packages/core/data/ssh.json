@@ -1,4 +1,5 @@
 {
+  "$schema": "../schemas/command.schema.json",
   "id": "ssh",
   "title": "连接远程主机",
   "description": "通过加密连接登录远程主机，也可配置端口转发。",

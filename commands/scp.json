@@ -1,4 +1,5 @@
 {
+  "$schema": "../schemas/command.schema.json",
   "id": "scp",
   "title": "安全复制文件",
   "description": "通过 SSH 在本地和远程主机之间复制文件或目录。",

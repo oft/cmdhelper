@@ -1,4 +1,5 @@
 {
+  "$schema": "../schemas/model.schema.json",
   "version": "0.1.0",
   "principles": [
     "先确认目标与投入，再处理工具细节",

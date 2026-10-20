@@ -11,7 +11,7 @@ export function mountResources(root,onChange){
  bindDimensionSliders(form,[...problemModel.resourceFields,frequencyDimension],(id,value)=>{if(id==='frequency')frequency=value;else resources[id]=value;selectedRoute='';outcome='unknown';update();});
  root.querySelector('#resource-mode').onchange=e=>{textMode=e.target.value==='text';selectedRoute='';outcome='unknown';update();};
  function update(){
-  const assessments=assessResources(resources,frequency);
+  const assessments=assessResources(resources,frequency).map(a=>textMode?a:{...a,reasons:[resources.toolReady==='yes'?'已有环境可减少准备，仍需核实具体方案的前置条件。':'首次安装、连接与授权准备需计入本次投入。',frequency==='repeat'?'重复使用可摊薄首次准备，还需考虑维护成本。':'单次任务应先比较已有方式与新建工具路线。']});
   const template=problemModel.templates[0];
   for(const f of [...problemModel.resourceFields,frequencyDimension])setDimensionCounts(form,f.id,f.options.map(o=>assessResources(f.id==='frequency'?resources:{...resources,[f.id]:o.id},f.id==='frequency'?o.id:frequency).filter(a=>(textMode||a.id==='tool')&&a.status==='eligible').length),'可选');
   const visible=assessments.filter(a=>textMode||a.id==='tool');

@@ -1,4 +1,5 @@
 {
+  "$schema": "../schemas/tools.schema.json",
   "version": 1,
   "tools": [
     {
@@ -234,6 +235,52 @@
           "remedy": "向管理员获取正确账号和授权；不要绕过主机身份核对。",
           "scope": "远端",
           "kind": "condition"
+        }
+      ]
+    },
+    {
+      "id": "git",
+      "title": "git",
+      "source": "https://git-scm.com/docs",
+      "preconditions": [
+        {
+          "id": "git-supported",
+          "label": "当前平台支持 git，具备可用安装途径",
+          "verify": "确认操作系统与 git 发行版兼容；已有安装也需确认可运行。",
+          "remedy": "选择受支持的发行版，安装前确认权限与来源。",
+          "scope": "本机",
+          "kind": "platform"
+        },
+        {
+          "id": "git-installed",
+          "label": "实际执行环境已安装并可调用 git",
+          "verify": "运行 git --version，确认可执行路径与版本。",
+          "remedy": "按平台安装或修复 PATH，然后重新检查。",
+          "scope": "本机",
+          "kind": "installation"
+        }
+      ]
+    },
+    {
+      "id": "curl",
+      "title": "curl",
+      "source": "https://curl.se/docs/manpage.html",
+      "preconditions": [
+        {
+          "id": "curl-supported",
+          "label": "当前平台支持 curl，具备可用安装途径",
+          "verify": "确认操作系统与 curl 发行版兼容；已有安装也需确认可运行。",
+          "remedy": "选择受支持的发行版，安装前确认权限与来源。",
+          "scope": "本机",
+          "kind": "platform"
+        },
+        {
+          "id": "curl-installed",
+          "label": "实际执行环境已安装并可调用 curl",
+          "verify": "运行 curl --version（Windows PowerShell 使用 curl.exe --version），确认本助手所需 --fail-with-body 选项可用：curl >= 7.76.0；JSON 场景需 >= 7.82.0。",
+          "remedy": "按平台安装或修复 PATH，然后重新检查。",
+          "scope": "本机",
+          "kind": "installation"
         }
       ]
     }

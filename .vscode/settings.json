@@ -1,0 +1,40 @@
+{
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "/commands/*.json"
+      ],
+      "url": "./schemas/command.schema.json"
+    },
+    {
+      "fileMatch": [
+        "/tools/catalog.json"
+      ],
+      "url": "./schemas/tools.schema.json"
+    },
+    {
+      "fileMatch": [
+        "/problems/catalog.json"
+      ],
+      "url": "./schemas/problems.schema.json"
+    },
+    {
+      "fileMatch": [
+        "/problems/model.json"
+      ],
+      "url": "./schemas/model.schema.json"
+    },
+    {
+      "fileMatch": [
+        "/problems/*.example.json"
+      ],
+      "url": "./problems/instance.schema.json"
+    },
+    {
+      "fileMatch": [
+        "/articles/*.json"
+      ],
+      "url": "./schemas/article.schema.json"
+    }
+  ]
+}

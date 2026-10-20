@@ -1,6 +1,6 @@
 # cmdhelper
 
-紧凑的命令助手：知道命令名，通过参数表单或终端逐步提示生成完整命令。首批支持 OpenSSH scp、ssh，包含常用参数介绍和模糊搜索。
+紧凑的命令助手：知道命令名，通过参数表单或终端逐步提示生成完整命令。支持 SSH、SCP、Git、curl 常用场景，包含参数介绍、结果说明与模糊搜索。
 
 ## 开发
 
@@ -74,7 +74,7 @@ pnpm build
 ## 标准问题与投入模型 v0.1
 
 - `problems/model.json`：模型约定、投入维度、短文本问题模板与三条人工编写的方案。
-- `problems/instance.schema.json`：标准问题实例的 JSON Schema（2020-12）；约束实体、目标、资源、证据来源和验收等结构。目前是格式契约，页面尚未提供通用实例导入或 Schema 运行时校验。
+- `problems/instance.schema.json`：标准问题实例的 JSON Schema（2020-12）；约束实体、目标、资源、证据来源和验收等结构。目前是由 Zod 自动生成的格式契约；内容准备与构建时执行 Zod 校验，页面尚未提供通用实例导入。
 - `problems/short-text.example.json`：显式保留未知条件的初始实例示例。
 - `packages/core/src/resources.js`：确定性资源筛选规则，输出可选择、待澄清、不符合投入，并给出原因。
 
@@ -85,3 +85,52 @@ pnpm build
 ## 维度滑块
 
 问题坐标与投入维度使用带文字刻度的离散滑块，支持拖动、点击刻度和键盘方向键 / Home / End。刻度下方的数量表示：保留其他条件，只切换当前维度选项时得到的候选方案数（问题坐标）或可选路线数（投入条件）。结果区分别显示候选、条件匹配、前置检查通过与待补充信息，匹配不代表已验证可执行。不相关维度禁用并显示“不适用”；模式切换、检查和验收状态仍使用选择控件。
+
+## Git 与 curl
+
+网页命令库与 CLI 已支持：
+
+- Git：clone、status、pull（--ff-only）、add（一个路径）、commit（暂存区）、push（正常推送）。
+- curl：GET 查询、下载文件、从 UTF-8 JSON 文件发送 POST。支持请求头、最长请求时间等常用参数。
+
+```sh
+pnpm cli git
+pnpm cli curl
+pnpm cli explain git
+pnpm cli search JSON
+```
+
+Git 和 curl 的 CLI 先选择场景，再只提示该场景相关字段；网页也按场景显示必填项。数据维护于 `commands/git.json` 与 `commands/curl.json`。问题导航包含对应标准问题、树形前置检查、操作步骤、前后变化和人工验收。
+
+curl 场景要求 >= 7.76.0（--fail-with-body），JSON 场景 >= 7.82.0（--json）。PowerShell 模式面向 Windows，生成 curl.exe 避免旧版别名；其他平台使用 POSIX 输出或按实际原生命令名称调整。JSON 使用 @文件路径读取，需自己准备内容；不会自动读取文件或发送请求。HTTP 错误正文仍可能写入下载文件，实际下载后需核对状态与内容。Git 不包含 force、reset、删除分支等操作。所有命令只生成，不自动执行。
+
+## TypeScript、Zod 与 JSON Schema
+
+生成的 Schema 为各层固定字段提供中文 `title`、`description`，并为部分字段提供 `examples`，供 IDE 悬停和补全提示。提示维护在 Zod 源文件中，运行 `pnpm schema:generate` 同步；这些注解不会自动填入业务默认值，也不会放宽校验规则。
+
+`packages/schema/src/index.ts` 是内容模型的唯一结构定义，使用 Zod 4 严格对象并导出推断的 TypeScript 类型。`references.ts` 负责跨记录语义检查。此次 TypeScript 覆盖模型、校验和生成脚本；现有网页、CLI 与 core 的业务 JS 保留。
+
+```sh
+pnpm schema:generate  # 模型变化后重新生成 JSON Schema，生成物需随代码维护
+pnpm check:data       # 校验全部内容及跨文件引用，并检查 Schema 是否过期
+pnpm typecheck        # TypeScript strict 类型检查
+pnpm build:schemas    # 构建模型包及 .d.ts 到忽略的 dist 目录
+pnpm test             # 类型、数据、模型反例和现有功能测试
+```
+
+生成产物：
+
+| 数据 | 生成的 JSON Schema |
+| --- | --- |
+| `commands/*.json` | `schemas/command.schema.json` |
+| `tools/catalog.json` | `schemas/tools.schema.json` |
+| `problems/catalog.json` | `schemas/problems.schema.json` |
+| `problems/model.json` | `schemas/model.schema.json` |
+| `problems/*.example.json` | `problems/instance.schema.json` |
+| `articles/*.json` | `schemas/article.schema.json` |
+
+Schema 使用 Draft 2020-12，固定记录禁止额外字段；有意开放的映射（参数值、维度值、事实证据等）也约束键和值类型。内容 JSON 已通过 `$schema` 相对路径声明对应模型，VS Code 项目设置也保留绑定。准备工具包数据时会重写 Schema 路径并复制对应 Schema，发布包内也能解析。package.json、tsconfig.json 使用 SchemaStore 的标准 Schema。生成物不手工编辑；只运行 `check:data` 不会改写它们。
+
+跨文件规则由 Zod 解析后的校验补充：标识唯一、文件名对应、场景字段及默认值类型、示例必填字段、结果占位符、工具与命令场景引用、维度选项、资源枚举一致性、模板及路线引用、条件树完整性与优先级、验收标识冲突，以及推断 / 未知事实不能被当成已确认事实。单独的 JSON Schema 不表示已经通过这些语义检查。
+
+根目录开发、CLI、内容同步、测试、网站构建以及 core 的 prepack 都先校验数据。现有 GitHub Actions 通过 `pnpm test` 和 `pnpm build` 执行同一检查；不需要单独维护另一套 CI 校验规则。

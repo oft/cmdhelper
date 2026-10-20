@@ -1,0 +1,418 @@
+{
+  "$schema": "../schemas/command.schema.json",
+  "id": "git",
+  "title": "管理代码版本",
+  "description": "克隆仓库，检查工作区，暂存、提交并同步代码版本。",
+  "scenarioOnly": true,
+  "source": "https://git-scm.com/docs",
+  "notes": [
+    "在已有仓库中运行 status、pull、add、commit、push；-C 可指定工作目录。",
+    "add 只暂存所选路径；commit 创建本地提交，push 才更新远端。",
+    "pull 使用 --ff-only；历史分叉时停止，需要先决定如何整合。",
+    "推送前检查分支、远端及待推送提交；本助手不会自动执行 Git 操作。"
+  ],
+  "fields": [
+    {
+      "id": "directory",
+      "label": "仓库工作目录",
+      "description": "可选：通过 -C 在指定目录运行，留空使用当前目录。",
+      "flag": "-C",
+      "kind": "text",
+      "required": false,
+      "placeholder": "./project"
+    },
+    {
+      "id": "repository",
+      "label": "仓库地址",
+      "description": "填写有读取权限的 HTTPS、SSH 地址或本地仓库路径。",
+      "flag": null,
+      "kind": "text",
+      "required": false,
+      "placeholder": "https://github.com/oft/cmdhelper.git"
+    },
+    {
+      "id": "target",
+      "label": "克隆到哪个目录？",
+      "description": "目录需不存在或为空；父目录应可写。",
+      "flag": null,
+      "kind": "text",
+      "required": false,
+      "placeholder": "./cmdhelper"
+    },
+    {
+      "id": "depth",
+      "label": "浅克隆提交数",
+      "description": "仅获取最近 N 层提交，正整数；不填则获取完整可达历史。",
+      "flag": "--depth",
+      "kind": "positive",
+      "required": false,
+      "placeholder": "1"
+    },
+    {
+      "id": "short",
+      "label": "简洁状态",
+      "description": "简短展示已暂存、未暂存及未跟踪文件。",
+      "flag": "--short",
+      "kind": "boolean",
+      "required": false,
+      "placeholder": ""
+    },
+    {
+      "id": "path",
+      "label": "要暂存的路径",
+      "description": "一次填写一个文件或目录；填写 . 会包含整个当前目录范围内的变更。",
+      "flag": null,
+      "kind": "text",
+      "required": false,
+      "placeholder": "./README.md"
+    },
+    {
+      "id": "message",
+      "label": "提交说明",
+      "description": "简要描述这次提交的目的；只提交已暂存内容。",
+      "flag": "-m",
+      "kind": "text",
+      "required": false,
+      "placeholder": "docs: update usage"
+    },
+    {
+      "id": "remote",
+      "label": "远端名称",
+      "description": "填写仓库配置中的远端名称，不是任意命令。",
+      "flag": null,
+      "kind": "text",
+      "required": false,
+      "placeholder": "origin"
+    },
+    {
+      "id": "branch",
+      "label": "远端分支",
+      "description": "pull 从该远端分支更新当前分支；push 将同名本地分支推送到远端。",
+      "flag": null,
+      "kind": "text",
+      "required": false,
+      "placeholder": "main"
+    },
+    {
+      "id": "upstream",
+      "label": "记录跟踪关系",
+      "description": "推送时为本地分支记录上游跟踪关系。",
+      "flag": "--set-upstream",
+      "kind": "boolean",
+      "required": false,
+      "placeholder": ""
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "clone",
+      "title": "把远程仓库克隆到本机",
+      "description": "获取代码和 Git 历史，创建本地仓库。",
+      "fields": [
+        "repository",
+        "target",
+        "depth"
+      ],
+      "required": [
+        "repository",
+        "target"
+      ],
+      "tokens": [
+        "clone"
+      ],
+      "defaults": {
+        "action": "clone"
+      },
+      "labels": {},
+      "result": {
+        "before": [
+          "仓库来源：{repository}。",
+          "本地目标：{target}，需不存在或为空。"
+        ],
+        "after": [
+          "在 {target} 创建本地仓库、历史和工作文件。",
+          "不会修改来源仓库；浅克隆会限制获取的历史。"
+        ],
+        "example": {
+          "title": "把远程仓库克隆到本机",
+          "assumptions": [
+            "独立教学示例，不代表已读取你的仓库、文件或接口。",
+            "假设所需权限、软件、网络及目标环境可用。"
+          ],
+          "values": {
+            "repository": "https://github.com/oft/cmdhelper.git",
+            "target": "./cmdhelper"
+          },
+          "steps": [
+            "确认仓库来源与读取权限。",
+            "执行克隆命令。",
+            "进入目录，运行 git status 检查仓库状态。"
+          ],
+          "before": "远程：cmdhelper.git\n本机：尚无 ./cmdhelper",
+          "after": "远程：保持原样\n本机：cmdhelper/\n├── .git/\n└── 工作文件",
+          "takeaways": [
+            "克隆不是推送，也不会自动安装项目依赖。"
+          ]
+        }
+      }
+    },
+    {
+      "id": "status",
+      "title": "查看仓库有哪些改动",
+      "description": "检查当前分支、暂存区和工作区的状态。",
+      "fields": [
+        "directory",
+        "short"
+      ],
+      "required": [],
+      "tokens": [
+        "status"
+      ],
+      "defaults": {
+        "action": "status"
+      },
+      "labels": {},
+      "result": {
+        "before": [
+          "仓库目录：{directory}。"
+        ],
+        "after": [
+          "显示分支及文件状态；不暂存、不提交、不修改工作文件。"
+        ],
+        "example": {
+          "title": "查看仓库有哪些改动",
+          "assumptions": [
+            "独立教学示例，不代表已读取你的仓库、文件或接口。",
+            "假设所需权限、软件、网络及目标环境可用。"
+          ],
+          "values": {
+            "directory": "./project",
+            "short": true
+          },
+          "steps": [
+            "在仓库目录执行状态查询。",
+            "区分已暂存、未暂存和未跟踪内容。"
+          ],
+          "before": "工作区：README.md 已修改\n暂存区：空",
+          "after": "状态输出： M README.md\n工作区与暂存区保持原样",
+          "takeaways": [
+            "第一列表示暂存状态，第二列表示工作区状态。"
+          ]
+        }
+      }
+    },
+    {
+      "id": "pull",
+      "title": "拉取远端更新到当前分支",
+      "description": "获取远端指定分支，仅允许快进更新当前分支。",
+      "fields": [
+        "directory",
+        "remote",
+        "branch"
+      ],
+      "required": [
+        "remote",
+        "branch"
+      ],
+      "tokens": [
+        "pull",
+        "--ff-only"
+      ],
+      "defaults": {
+        "action": "pull"
+      },
+      "labels": {},
+      "result": {
+        "before": [
+          "当前仓库：{directory}，需先确认当前分支。",
+          "从 {remote} 的 {branch} 分支获取更新，建议工作区干净。"
+        ],
+        "after": [
+          "快进可行时，更新当前分支与工作文件。",
+          "发生分叉时不整合；但远端跟踪信息可能已被 fetch 更新。"
+        ],
+        "example": {
+          "title": "拉取远端更新到当前分支",
+          "assumptions": [
+            "独立教学示例，不代表已读取你的仓库、文件或接口。",
+            "假设所需权限、软件、网络及目标环境可用。"
+          ],
+          "values": {
+            "remote": "origin",
+            "branch": "main"
+          },
+          "steps": [
+            "先运行 git status，确认当前分支和本地改动。",
+            "执行 pull --ff-only。",
+            "检查当前提交和工作文件；失败时查看分叉或权限原因。"
+          ],
+          "before": "当前分支：A\norigin/main：A → B",
+          "after": "当前分支：A → B\n工作文件更新到 B",
+          "takeaways": [
+            "不会自动合并分叉历史。"
+          ]
+        }
+      }
+    },
+    {
+      "id": "add",
+      "title": "把指定文件改动放入暂存区",
+      "description": "选择本次准备提交的一个文件或目录。",
+      "fields": [
+        "directory",
+        "path"
+      ],
+      "required": [
+        "path"
+      ],
+      "tokens": [
+        "add"
+      ],
+      "defaults": {
+        "action": "add"
+      },
+      "labels": {},
+      "result": {
+        "before": [
+          "仓库：{directory}。",
+          "待暂存路径：{path}。"
+        ],
+        "after": [
+          "把 {path} 范围内的新增、修改和删除记录到暂存区。",
+          "工作文件不因此改变；尚未创建提交。"
+        ],
+        "example": {
+          "title": "把指定文件改动放入暂存区",
+          "assumptions": [
+            "独立教学示例，不代表已读取你的仓库、文件或接口。",
+            "假设所需权限、软件、网络及目标环境可用。"
+          ],
+          "values": {
+            "path": "./README.md"
+          },
+          "steps": [
+            "检查 git status 和文件差异。",
+            "暂存明确选定的路径。",
+            "用 git diff --cached 检查暂存内容。"
+          ],
+          "before": "工作区：README.md 已修改\n暂存区：无本次改动",
+          "after": "工作区：文件保留\n暂存区：记录 README.md 改动",
+          "takeaways": [
+            "暂存后再次修改文件，需要再次 add 才能更新暂存快照。"
+          ]
+        }
+      }
+    },
+    {
+      "id": "commit",
+      "title": "将已暂存内容保存为本地提交",
+      "description": "为暂存区快照创建一个本地版本记录。",
+      "fields": [
+        "directory",
+        "message"
+      ],
+      "required": [
+        "message"
+      ],
+      "tokens": [
+        "commit"
+      ],
+      "defaults": {
+        "action": "commit"
+      },
+      "labels": {},
+      "result": {
+        "before": [
+          "仓库：{directory}，需已有预期的暂存内容。",
+          "提交说明：{message}。"
+        ],
+        "after": [
+          "创建本地提交并推进当前分支。",
+          "未暂存改动不会自动纳入；远端仓库不会因此更新。"
+        ],
+        "example": {
+          "title": "将已暂存内容保存为本地提交",
+          "assumptions": [
+            "独立教学示例，不代表已读取你的仓库、文件或接口。",
+            "假设所需权限、软件、网络及目标环境可用。"
+          ],
+          "values": {
+            "message": "docs: update usage"
+          },
+          "steps": [
+            "检查 git diff --cached。",
+            "确认作者身份已配置，填写说明后提交。",
+            "检查 git log -1 和 git status。"
+          ],
+          "before": "本地：提交 A\n暂存区：README.md 改动",
+          "after": "本地：A → B（新提交）\n远端：保持原样",
+          "takeaways": [
+            "commit 不等于 push；检查暂存范围后再执行。"
+          ]
+        }
+      }
+    },
+    {
+      "id": "push",
+      "title": "把本地分支提交推送到远端",
+      "description": "将指定同名本地分支的提交推送至远端。",
+      "fields": [
+        "directory",
+        "remote",
+        "branch",
+        "upstream"
+      ],
+      "required": [
+        "remote",
+        "branch"
+      ],
+      "tokens": [
+        "push"
+      ],
+      "defaults": {
+        "action": "push"
+      },
+      "labels": {},
+      "result": {
+        "before": [
+          "仓库：{directory}，本地分支 {branch} 需存在。",
+          "远端：{remote}；需要写入权限。"
+        ],
+        "after": [
+          "成功时更新 {remote} 上的 {branch} 分支。",
+          "未提交的工作文件不会被上传；分叉或受保护分支可能拒绝推送。"
+        ],
+        "example": {
+          "title": "把本地分支提交推送到远端",
+          "assumptions": [
+            "独立教学示例，不代表已读取你的仓库、文件或接口。",
+            "假设所需权限、软件、网络及目标环境可用。"
+          ],
+          "values": {
+            "remote": "origin",
+            "branch": "main",
+            "upstream": true
+          },
+          "steps": [
+            "检查远端地址、分支和待推送提交。",
+            "正常推送，不使用 force。",
+            "查看输出并确认远端分支已更新。"
+          ],
+          "before": "本地 main：A → B\n远端 main：A",
+          "after": "本地 main：A → B\n远端 main：A → B",
+          "takeaways": [
+            "推送前确认提交内容可以对远端可见。"
+          ]
+        }
+      }
+    }
+  ],
+  "result": {
+    "before": [
+      "请先选择 Git 场景。"
+    ],
+    "after": [
+      "按所选场景说明具体变化。"
+    ]
+  }
+}

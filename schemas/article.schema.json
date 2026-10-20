@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "title": "校验模型",
+      "description": "供 IDE 解析的 JSON Schema 地址；本地地址相对于当前 JSON 文件。",
+      "type": "string",
+      "minLength": 1
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+      "title": "文章标识",
+      "description": "用于文件名及页面路由的唯一标识。",
+      "examples": [
+        "ssh-scp-basics"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "标题",
+      "description": "展示给用户的简短中文名称。"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+      "title": "发布日期",
+      "description": "有效的 YYYY-MM-DD 日期。",
+      "examples": [
+        "2026-10-20"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "文章摘要",
+      "description": "文章列表中显示的简短介绍。"
+    },
+    "sections": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "heading": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "title": "段落标题",
+            "description": "当前段落的简短标题。"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "title": "段落正文",
+            "description": "当前段落的正文内容。"
+          }
+        },
+        "required": [
+          "heading",
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "title": "文章段落",
+      "description": "按显示顺序组织的段落列表。"
+    }
+  },
+  "required": [
+    "slug",
+    "title",
+    "date",
+    "summary",
+    "sections"
+  ],
+  "additionalProperties": false
+}

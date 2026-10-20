@@ -1,0 +1,427 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "title": "校验模型",
+      "description": "供 IDE 解析的 JSON Schema 地址；本地地址相对于当前 JSON 文件。",
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "title": "格式版本",
+      "description": "内容格式版本；目录使用整数 1，标准问题模型使用语义版本字符串。"
+    },
+    "principles": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      },
+      "title": "建模原则",
+      "description": "说明标准问题模型的设计原则与判断边界。"
+    },
+    "instanceContract": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "唯一标识",
+          "description": "此字段保存“唯一标识”的建模说明文字。",
+          "examples": [
+            "scp",
+            "upload-file"
+          ]
+        },
+        "templateId": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "模板引用",
+          "description": "此字段保存“模板引用”的建模说明文字。"
+        },
+        "utterance": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "原始问题",
+          "description": "此字段保存“原始问题”的建模说明文字。",
+          "examples": [
+            "我想发送一句话给另一台机器"
+          ]
+        },
+        "entities": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "问题实体",
+          "description": "此字段保存“问题实体”的建模说明文字。"
+        },
+        "initialState": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "初始状态",
+          "description": "此字段保存“初始状态”的建模说明文字。"
+        },
+        "goal": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "目标状态",
+          "description": "此字段保存“目标状态”的建模说明文字。"
+        },
+        "invariants": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "保持不变的约束",
+          "description": "此字段保存“保持不变的约束”的建模说明文字。"
+        },
+        "resources": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "可投入资源",
+          "description": "此字段保存“可投入资源”的建模说明文字。"
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "事实证据",
+          "description": "此字段保存“事实证据”的建模说明文字。"
+        },
+        "acceptance": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "验收要求",
+          "description": "此字段保存“验收要求”的建模说明文字。"
+        },
+        "selectedRoute": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "选中路线",
+          "description": "此字段保存“选中路线”的建模说明文字。"
+        }
+      },
+      "required": [
+        "id",
+        "templateId",
+        "utterance",
+        "entities",
+        "initialState",
+        "goal",
+        "invariants",
+        "resources",
+        "evidence",
+        "acceptance",
+        "selectedRoute"
+      ],
+      "additionalProperties": false,
+      "title": "实例字段约定",
+      "description": "解释标准问题实例各字段的含义；这里保存说明文字。"
+    },
+    "resourceFields": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+            "title": "唯一标识",
+            "description": "以英文字母开头，仅含字母、数字、下划线和连字符；在所属集合中唯一。",
+            "examples": [
+              "scp",
+              "upload-file"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "title": "显示名称",
+            "description": "字段、条件、实体或维度选项的用户可读名称。"
+          },
+          "options": {
+            "minItems": 2,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+                  "title": "唯一标识",
+                  "description": "以英文字母开头，仅含字母、数字、下划线和连字符；在所属集合中唯一。",
+                  "examples": [
+                    "scp",
+                    "upload-file"
+                  ]
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "显示名称",
+                  "description": "字段、条件、实体或维度选项的用户可读名称。"
+                }
+              },
+              "required": [
+                "id",
+                "label"
+              ],
+              "additionalProperties": false
+            },
+            "title": "维度选项",
+            "description": "该维度可选择的离散取值，至少两个且标识不重复。"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "options"
+        ],
+        "additionalProperties": false
+      },
+      "title": "资源维度定义",
+      "description": "定义资源滑块与选项，必须与资源枚举保持一致。"
+    },
+    "templates": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+            "title": "唯一标识",
+            "description": "以英文字母开头，仅含字母、数字、下划线和连字符；在所属集合中唯一。",
+            "examples": [
+              "scp",
+              "upload-file"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "title": "标题",
+            "description": "展示给用户的简短中文名称。"
+          },
+          "aliases": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "title": "常见问法",
+            "description": "用户可能使用的口语化问题表达，用于查询模板。"
+          },
+          "entities": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+                  "title": "唯一标识",
+                  "description": "以英文字母开头，仅含字母、数字、下划线和连字符；在所属集合中唯一。",
+                  "examples": [
+                    "scp",
+                    "upload-file"
+                  ]
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "device",
+                    "file",
+                    "directory",
+                    "short-text",
+                    "video",
+                    "service",
+                    "repository"
+                  ],
+                  "title": "实体类型",
+                  "description": "device 设备、file 文件、directory 目录、short-text 短文本、video 视频、service 服务、repository 仓库。"
+                },
+                "label": {
+                  "title": "显示名称",
+                  "description": "字段、条件、实体或维度选项的用户可读名称。",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "id",
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            "title": "问题实体",
+            "description": "列出参与问题的设备、文件等实体及其稳定标识。"
+          },
+          "goal": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "title": "目标状态",
+            "description": "说明用户希望达到的状态；实例中使用列表。"
+          },
+          "invariants": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "title": "保持不变的约束",
+            "description": "执行过程中必须持续满足的限制，例如源文件不能删除。"
+          },
+          "routes": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+                  "title": "唯一标识",
+                  "description": "以英文字母开头，仅含字母、数字、下划线和连字符；在所属集合中唯一。",
+                  "examples": [
+                    "scp",
+                    "upload-file"
+                  ]
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "标题",
+                  "description": "展示给用户的简短中文名称。"
+                },
+                "cost": {
+                  "type": "object",
+                  "properties": {
+                    "setup": {
+                      "type": "string",
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "准备投入",
+                      "description": "unknown 未确认、none 不愿准备、small 少量准备、flexible 可灵活投入。"
+                    },
+                    "perUse": {
+                      "type": "string",
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "单次投入",
+                      "description": "每次执行方案需要的时间或操作成本。"
+                    },
+                    "maintenance": {
+                      "type": "string",
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "维护投入",
+                      "description": "持续使用该方案需要的维护工作。"
+                    }
+                  },
+                  "required": [
+                    "setup",
+                    "perUse",
+                    "maintenance"
+                  ],
+                  "additionalProperties": false,
+                  "title": "资源成本",
+                  "description": "分别描述首次准备、每次使用和长期维护的投入。"
+                },
+                "steps": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "\\S"
+                  },
+                  "title": "执行步骤",
+                  "description": "按先后顺序列出可操作的步骤。"
+                },
+                "before": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "执行前",
+                  "description": "说明执行前的位置、内容或状态；示例可用多行目录树。"
+                },
+                "after": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "执行后",
+                  "description": "说明成功执行后的预计状态及变化，不代表已实际执行或验证。"
+                },
+                "acceptance": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "验收要求",
+                  "description": "说明如何确认目标达成；方案中使用可检查条件，实例和路线中使用结果描述。"
+                }
+              },
+              "required": [
+                "id",
+                "title",
+                "cost",
+                "steps",
+                "before",
+                "after",
+                "acceptance"
+              ],
+              "additionalProperties": false
+            },
+            "title": "候选路线",
+            "description": "解决同一标准问题的不同操作路径及其成本和验收要求。"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "aliases",
+          "entities",
+          "goal",
+          "invariants",
+          "routes"
+        ],
+        "additionalProperties": false
+      },
+      "title": "标准问题模板",
+      "description": "把常见问题预定义为实体、目标、约束与候选路线。"
+    }
+  },
+  "required": [
+    "version",
+    "principles",
+    "instanceContract",
+    "resourceFields",
+    "templates"
+  ],
+  "additionalProperties": false
+}

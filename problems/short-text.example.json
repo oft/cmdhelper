@@ -1,4 +1,5 @@
 {
+  "$schema": "./instance.schema.json",
   "id": "short-text-example",
   "templateId": "send-short-text",
   "utterance": "我想发送一句话给另一台机器",

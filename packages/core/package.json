@@ -1,11 +1,13 @@
 {
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "@cmdhelper/core",
   "version": "0.1.0",
   "type": "module",
   "exports": "./src/index.js",
   "files": [
     "src",
-    "data"
+    "data",
+    "schemas"
   ],
   "scripts": {
     "prepack": "node ../../scripts/prepare-packages.mjs"
