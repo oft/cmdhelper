@@ -1,0 +1,238 @@
+{
+  "version": "0.1.0",
+  "principles": [
+    "先确认目标与投入，再处理工具细节",
+    "未知不等于不满足，也不等于允许",
+    "手工、已有通道也是正式方案",
+    "成本按维度解释，不生成无依据的精确评分"
+  ],
+  "instanceContract": {
+    "id": "问题实例标识",
+    "templateId": "标准问题模板标识",
+    "utterance": "用户原始描述",
+    "entities": "有标识和类型的设备、文件、文本等对象",
+    "initialState": "当前事实及未知项",
+    "goal": "可检查的目标状态",
+    "invariants": "不能破坏的条件",
+    "resources": "投入意愿与环境便利性",
+    "evidence": "每项事实的 value、source（user/inferred/observed）、status（unknown/confirmed）",
+    "acceptance": "验收规则；与前置条件分开",
+    "selectedRoute": "用户选择的方案；条件改变后失效"
+  },
+  "resourceFields": [
+    {
+      "id": "setup",
+      "label": "愿意投入多少准备工作？",
+      "options": [
+        {
+          "id": "unknown",
+          "label": "尚不确定"
+        },
+        {
+          "id": "none",
+          "label": "不做额外配置"
+        },
+        {
+          "id": "small",
+          "label": "接受少量准备"
+        },
+        {
+          "id": "flexible",
+          "label": "愿意建立长期方案"
+        }
+      ]
+    },
+    {
+      "id": "install",
+      "label": "是否接受安装软件？",
+      "options": [
+        {
+          "id": "unknown",
+          "label": "尚不确定"
+        },
+        {
+          "id": "no",
+          "label": "不接受"
+        },
+        {
+          "id": "yes",
+          "label": "接受（仍需确认权限）"
+        }
+      ]
+    },
+    {
+      "id": "configure",
+      "label": "是否接受修改设备配置？",
+      "options": [
+        {
+          "id": "unknown",
+          "label": "尚不确定"
+        },
+        {
+          "id": "no",
+          "label": "不接受"
+        },
+        {
+          "id": "yes",
+          "label": "接受（仍需确认权限）"
+        }
+      ]
+    },
+    {
+      "id": "physical",
+      "label": "方便直接操作目标设备吗？",
+      "options": [
+        {
+          "id": "unknown",
+          "label": "尚不确定"
+        },
+        {
+          "id": "yes",
+          "label": "方便"
+        },
+        {
+          "id": "no",
+          "label": "不方便 / 无法直接操作"
+        }
+      ]
+    },
+    {
+      "id": "channel",
+      "label": "是否已有允许使用的文本传递通道？",
+      "options": [
+        {
+          "id": "unknown",
+          "label": "尚不确定"
+        },
+        {
+          "id": "yes",
+          "label": "有，且允许传递这些内容"
+        },
+        {
+          "id": "no",
+          "label": "没有"
+        }
+      ]
+    },
+    {
+      "id": "toolReady",
+      "label": "当前工具路线是否已配置就绪？",
+      "options": [
+        {
+          "id": "unknown",
+          "label": "尚不确定"
+        },
+        {
+          "id": "yes",
+          "label": "已具备安装、连接等基础环境"
+        },
+        {
+          "id": "no",
+          "label": "尚未就绪"
+        }
+      ]
+    },
+    {
+      "id": "priority",
+      "label": "优先考虑什么？",
+      "options": [
+        {
+          "id": "unknown",
+          "label": "尚不确定"
+        },
+        {
+          "id": "quick",
+          "label": "尽快完成这一次"
+        },
+        {
+          "id": "repeat",
+          "label": "降低长期重复操作"
+        }
+      ]
+    }
+  ],
+  "templates": [
+    {
+      "id": "send-short-text",
+      "title": "发送一句话到另一台设备",
+      "aliases": [
+        "传一句话",
+        "把一段文字发到另一台机器",
+        "复制短文本到另一台电脑"
+      ],
+      "entities": [
+        {
+          "id": "source",
+          "type": "device"
+        },
+        {
+          "id": "target",
+          "type": "device"
+        },
+        {
+          "id": "message",
+          "type": "short-text"
+        }
+      ],
+      "goal": "目标设备获得内容一致的文本；源文本保留。",
+      "invariants": [
+        "使用允许传递该内容的通道",
+        "发送完成后核对文本一致性"
+      ],
+      "routes": [
+        {
+          "id": "manual",
+          "title": "直接在目标设备输入",
+          "cost": {
+            "setup": "无需配置工具",
+            "perUse": "需到目标设备输入并逐字核对；文本越长、次数越多，成本越高",
+            "maintenance": "没有传输工具维护成本"
+          },
+          "steps": [
+            "在源设备查看原文。",
+            "在目标设备打开需要接收文本的位置，手工输入。",
+            "对照原文检查文字、数字、标点和换行。"
+          ],
+          "before": "设备 A：原文\n设备 B：尚未输入该文本",
+          "after": "设备 A：原文保留\n设备 B：已有核对后的文本",
+          "acceptance": "目标位置的文本与原文一致。"
+        },
+        {
+          "id": "channel",
+          "title": "使用已有通道复制文本",
+          "cost": {
+            "setup": "已有通道可用时准备较少",
+            "perUse": "复制、发送、接收并粘贴；取决于现有通道",
+            "maintenance": "沿用现有账号、连接或剪贴板工具"
+          },
+          "steps": [
+            "确认通道可在两台设备间使用，且允许传递此内容。",
+            "在源设备复制原文并发送。",
+            "在目标设备接收、粘贴并对照检查。"
+          ],
+          "before": "设备 A：原文\n设备 B：已有可用接收通道",
+          "after": "设备 A：原文保留\n设备 B：接收到文本",
+          "acceptance": "目标应用中内容正确；确认通道未改变换行或字符。"
+        },
+        {
+          "id": "tool",
+          "title": "将文本保存为文件，用 SCP 传输",
+          "cost": {
+            "setup": "环境未就绪时需处理客户端、连接、服务与认证",
+            "perUse": "保存文本、传输文件，再在目标设备打开",
+            "maintenance": "维护账号、密钥和连接环境"
+          },
+          "steps": [
+            "在本机将原文保存为 UTF-8 文本文件。",
+            "按问题树检查 SCP 传输前置条件。",
+            "在命令助手中填写文本文件路径与远程目录并执行。",
+            "在目标设备打开文件，核对内容与编码。"
+          ],
+          "before": "设备 A：原文待保存为文本文件\n设备 B：目标目录",
+          "after": "设备 A：原文与文本文件保留\n设备 B：收到文本文件，需打开或粘贴到目标位置",
+          "acceptance": "文件传输成功，且目标设备能正确读取原文。"
+        }
+      ]
+    }
+  ]
+}

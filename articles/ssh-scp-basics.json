@@ -1,0 +1,24 @@
+{
+  "slug": "ssh-scp-basics",
+  "title": "SSH 与 SCP：从连接到传文件",
+  "date": "2026-10-20",
+  "summary": "理解主机、端口、私钥和复制方向，避免常见参数混淆。",
+  "sections": [
+    {
+      "heading": "先连接，再复制",
+      "text": "SSH 用于登录远程主机；SCP 用于复制文件。两者都可使用 SSH 密钥认证。先确认主机和用户名，再填写自定义端口。"
+    },
+    {
+      "heading": "端口参数大小写不同",
+      "text": "ssh 使用 -p 指定端口，scp 使用 -P。scp 的 -p 用于保留文件时间与权限。"
+    },
+    {
+      "heading": "上传与下载",
+      "text": "上传把本地路径放在源位置，user@host:/path 放在目标位置。下载则反过来。目录需要勾选递归复制。"
+    },
+    {
+      "heading": "选择正确的 Shell",
+      "text": "助手支持 POSIX shell 和 PowerShell 的参数引用。Windows cmd.exe 不在当前支持范围内。生成后应检查路径和目标，再复制执行。"
+    }
+  ]
+}

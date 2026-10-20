@@ -1,0 +1,197 @@
+{
+  "id": "ssh",
+  "title": "连接远程主机",
+  "description": "通过加密连接登录远程主机，也可配置端口转发。",
+  "source": "https://man.openbsd.org/ssh.1",
+  "notes": [
+    "首次连接时应核对服务器指纹。",
+    "本地转发格式为 本地端口:目标主机:目标端口，默认仅本机访问。",
+    "此助手生成命令，不自动执行，也不保存密码。"
+  ],
+  "fields": [
+    {
+      "id": "destination",
+      "label": "目标主机",
+      "description": "填写 user@host 或 SSH 配置中的主机别名。",
+      "flag": null,
+      "required": true,
+      "kind": "text",
+      "placeholder": "user@example.com"
+    },
+    {
+      "id": "port",
+      "label": "SSH 端口",
+      "description": "服务器 SSH 端口，默认 22。",
+      "flag": "-p",
+      "required": false,
+      "kind": "port",
+      "placeholder": "22"
+    },
+    {
+      "id": "identity",
+      "label": "私钥文件",
+      "description": "指定用于身份认证的私钥文件；不要填写私钥内容。",
+      "flag": "-i",
+      "required": false,
+      "kind": "text",
+      "placeholder": "~/.ssh/id_ed25519"
+    },
+    {
+      "id": "jump",
+      "label": "跳板机",
+      "description": "通过指定跳板主机连接，可填写 user@host:port。",
+      "flag": "-J",
+      "required": false,
+      "kind": "text",
+      "placeholder": "user@jump.example.com"
+    },
+    {
+      "id": "compress",
+      "label": "启用压缩",
+      "description": "传输前压缩数据，适合文本和低带宽链路。",
+      "flag": "-C",
+      "required": false,
+      "kind": "boolean",
+      "placeholder": ""
+    },
+    {
+      "id": "verbose",
+      "label": "调试输出",
+      "description": "显示连接和认证过程，便于排查问题。",
+      "flag": "-v",
+      "required": false,
+      "kind": "boolean",
+      "placeholder": ""
+    },
+    {
+      "id": "forward",
+      "label": "本地端口转发",
+      "description": "格式 本地端口:目标主机:目标端口。",
+      "flag": "-L",
+      "required": false,
+      "kind": "text",
+      "placeholder": "8080:127.0.0.1:80"
+    },
+    {
+      "id": "noCommand",
+      "label": "仅建立隧道",
+      "description": "不执行远程命令，通常与端口转发组合使用。",
+      "flag": "-N",
+      "required": false,
+      "kind": "boolean",
+      "placeholder": ""
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "login",
+      "title": "登录远程主机",
+      "description": "填写用户名与主机地址，建立交互式连接。",
+      "defaults": {
+        "noCommand": false
+      },
+      "labels": {
+        "destination": "要连接哪台主机？"
+      },
+      "placeholders": {
+        "destination": "user@example.com"
+      },
+      "result": {
+        "before": [
+          "连接目标：{destination}，SSH 端口 {port}。",
+          "需要网络可达，并具备可用的账号与认证方式。"
+        ],
+        "after": [
+          "连接成功后，终端进入 {destination} 的远程交互环境。",
+          "退出远程会话后回到本地终端；登录本身不改变文件。"
+        ],
+        "example": {
+          "title": "使用 deploy 账号登录服务器",
+          "assumptions": [
+            "以下主机和服务为教学示例。",
+            "假设账号认证成功，网络及相关端口可达。"
+          ],
+          "values": {
+            "destination": "deploy@example.com"
+          },
+          "before": "本机终端\n└── 当前在本地命令环境\n\nexample.com\n└── deploy 账号可登录",
+          "after": "本机终端\n└── SSH 会话 → example.com\n    └── 以 deploy 身份操作远程主机",
+          "steps": [
+            "连接 example.com 的 SSH 端口，默认 22。",
+            "验证服务器身份，并完成 deploy 账号认证。",
+            "进入远程命令环境；后续输入的命令在服务器运行。"
+          ],
+          "takeaways": [
+            "输入 exit 退出远程会话，回到本地终端。",
+            "仅登录不会上传、删除或修改文件。",
+            "登录后执行的命令会按远程账号权限影响服务器。"
+          ]
+        }
+      }
+    },
+    {
+      "id": "tunnel",
+      "title": "通过 SSH 访问远程服务",
+      "description": "建立本地端口转发，例如从本机 8080 访问远程主机的 80 端口。",
+      "defaults": {
+        "noCommand": true
+      },
+      "required": [
+        "forward"
+      ],
+      "labels": {
+        "destination": "通过哪台主机连接？",
+        "forward": "将哪个本地端口转发到哪个服务？"
+      },
+      "placeholders": {
+        "destination": "user@example.com",
+        "forward": "8080:127.0.0.1:80"
+      },
+      "result": {
+        "before": [
+          "连接目标：{destination}，SSH 端口 {port}。",
+          "需要网络可达，并具备可用的账号与认证方式。",
+          "本地端口 {localPort} 需要可用；目标服务 {service} 需能从 SSH 主机访问。"
+        ],
+        "after": [
+          "转发成功后，访问本机 127.0.0.1:{localPort}，流量经 {destination} 转发到 {service}。",
+          "目标服务地址相对于 SSH 主机；不会打开远程交互终端。",
+          "保持 SSH 进程运行以维持隧道；结束进程后转发停止，不复制文件。"
+        ],
+        "example": {
+          "title": "通过本机 8080 访问服务器 Web 服务",
+          "assumptions": [
+            "以下主机和服务为教学示例。",
+            "假设账号认证成功，网络及相关端口可达。"
+          ],
+          "values": {
+            "destination": "deploy@example.com",
+            "forward": "8080:127.0.0.1:80"
+          },
+          "before": "本机\n└── 127.0.0.1:8080（尚未建立此转发）\n\nexample.com\n└── 127.0.0.1:80（Web 服务）",
+          "after": "浏览器 → 本机 127.0.0.1:8080\n              │\n           SSH 加密隧道\n              │\n              ▼\nexample.com → 127.0.0.1:80",
+          "steps": [
+            "建立到 example.com 的 SSH 连接。",
+            "在本机监听 8080，将连接转发到服务器视角的 127.0.0.1:80。",
+            "打开浏览器访问 http://127.0.0.1:8080。"
+          ],
+          "takeaways": [
+            "-N 仅保持连接和隧道，不打开远程 Shell。",
+            "保持此终端进程运行；按 Ctrl+C 结束连接后，转发随之停止。",
+            "目标 127.0.0.1 指服务器自身，而非你的本机。"
+          ]
+        }
+      }
+    }
+  ],
+  "result": {
+    "before": [
+      "连接目标：{destination}，SSH 端口 {port}。",
+      "需要网络可达，并具备可用的账号与认证方式。"
+    ],
+    "after": [
+      "连接成功后建立加密 SSH 会话。",
+      "SSH 连接本身不复制或删除文件；后续远程操作取决于你执行的命令。"
+    ]
+  }
+}

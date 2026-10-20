@@ -1,0 +1,358 @@
+{
+  "id": "scp",
+  "title": "安全复制文件",
+  "description": "通过 SSH 在本地和远程主机之间复制文件或目录。",
+  "source": "https://man.openbsd.org/scp.1",
+  "notes": [
+    "端口使用大写 -P；小写 -p 用于保留时间和权限。",
+    "复制目录时启用 -r。当前 OpenSSH 默认使用 SFTP 传输。",
+    "本地文件名含冒号时使用 ./ 前缀；远程路径的特殊字符还可能受远端解释影响。"
+  ],
+  "fields": [
+    {
+      "id": "source",
+      "label": "源路径",
+      "description": "上传示例 ./file.txt；下载示例 user@host:/path/file。",
+      "flag": null,
+      "required": true,
+      "kind": "text",
+      "placeholder": "./file.txt"
+    },
+    {
+      "id": "target",
+      "label": "目标路径",
+      "description": "上传示例 user@host:/srv/；下载示例 ./downloads/。",
+      "flag": null,
+      "required": true,
+      "kind": "text",
+      "placeholder": "user@example.com:/srv/"
+    },
+    {
+      "id": "port",
+      "label": "SSH 端口",
+      "description": "服务器 SSH 端口，默认 22。",
+      "flag": "-P",
+      "required": false,
+      "kind": "port",
+      "placeholder": "22"
+    },
+    {
+      "id": "recursive",
+      "label": "复制整个目录",
+      "description": "递归复制目录及其内容。",
+      "flag": "-r",
+      "required": false,
+      "kind": "boolean",
+      "placeholder": ""
+    },
+    {
+      "id": "preserve",
+      "label": "保留时间和权限",
+      "description": "保留修改时间、访问时间及文件权限位。",
+      "flag": "-p",
+      "required": false,
+      "kind": "boolean",
+      "placeholder": ""
+    },
+    {
+      "id": "identity",
+      "label": "私钥文件",
+      "description": "指定用于身份认证的私钥文件；不要填写私钥内容。",
+      "flag": "-i",
+      "required": false,
+      "kind": "text",
+      "placeholder": "~/.ssh/id_ed25519"
+    },
+    {
+      "id": "jump",
+      "label": "跳板机",
+      "description": "通过指定跳板主机连接，可填写 user@host:port。",
+      "flag": "-J",
+      "required": false,
+      "kind": "text",
+      "placeholder": "user@jump.example.com"
+    },
+    {
+      "id": "compress",
+      "label": "启用压缩",
+      "description": "传输前压缩数据，适合文本和低带宽链路。",
+      "flag": "-C",
+      "required": false,
+      "kind": "boolean",
+      "placeholder": ""
+    },
+    {
+      "id": "verbose",
+      "label": "调试输出",
+      "description": "显示连接和认证过程，便于排查问题。",
+      "flag": "-v",
+      "required": false,
+      "kind": "boolean",
+      "placeholder": ""
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "upload-file",
+      "title": "发送文件到远程目录",
+      "description": "选择一个本地文件，上传到远程主机。",
+      "defaults": {
+        "recursive": false
+      },
+      "labels": {
+        "source": "要发送哪个文件？",
+        "target": "发送到哪个远程目录？"
+      },
+      "placeholders": {
+        "source": "./report.pdf",
+        "target": "user@example.com:/srv/uploads/"
+      },
+      "result": {
+        "before": [
+          "本地源文件：{source}，需要存在且可读取。",
+          "远程目标目录：{target}，需要已存在且可写；现有文件未检测。"
+        ],
+        "after": [
+          "目标目录内写入文件：{resultPath}。",
+          "本地源文件保留，不移动、不删除。",
+          "目标同名文件可能被覆盖；目标中其他文件保留，不执行镜像清理。"
+        ],
+        "example": {
+          "title": "发送文件到远程目录：一个具体例子",
+          "assumptions": [
+            "以下文件名为教学示例，不代表已读取你的文件。",
+            "假设目标目录已存在，原有 keep.txt，传输与认证成功。"
+          ],
+          "values": {
+            "source": "./report.pdf",
+            "target": "deploy@example.com:/srv/uploads/"
+          },
+          "before": "本地源内容\nreport.pdf\n\n远程主机目标目录\n/srv/uploads/\n└── keep.txt",
+          "after": "远程主机目标目录\n/srv/uploads/\n├── keep.txt         ← 原有文件保留\n└── report.pdf       ← 新增或覆盖\n\n本地源内容保持原样。",
+          "steps": [
+            "读取源文件 report.pdf。",
+            "通过 SSH 将数据上传到远程主机。",
+            "写入目标目录；同名文件可能被覆盖，其他文件保留。"
+          ],
+          "takeaways": [
+            "目标中没有 report.pdf 时新增；已有同名文件时可能覆盖其内容。",
+            "复制完成后，源内容仍然存在。",
+            "中途失败可能留下部分文件；应检查退出状态和目标内容后再确认完成。"
+          ]
+        }
+      }
+    },
+    {
+      "id": "upload-directory",
+      "title": "发送文件夹到远程目录",
+      "description": "复制整个文件夹，目标目录中保留该文件夹名称。",
+      "defaults": {
+        "recursive": true
+      },
+      "labels": {
+        "source": "要发送哪个文件夹？",
+        "target": "发送到哪个远程目录？"
+      },
+      "placeholders": {
+        "source": "./project",
+        "target": "user@example.com:/srv/uploads/"
+      },
+      "result": {
+        "before": [
+          "本地源文件夹：{source}，需要存在且可读取。",
+          "远程目标目录：{target}，需要已存在且可写；现有文件未检测。"
+        ],
+        "after": [
+          "目标目录内新增或合并文件夹：{resultPath}。",
+          "本地源文件夹及其内容保留，不移动、不删除。",
+          "目标同名文件可能被覆盖；目标中其他文件保留，不执行镜像清理。"
+        ],
+        "example": {
+          "title": "发送文件夹到远程目录：一个具体例子",
+          "assumptions": [
+            "以下文件名为教学示例，不代表已读取你的文件。",
+            "假设目标目录已存在，原有 keep.txt，传输与认证成功。"
+          ],
+          "values": {
+            "source": "./project",
+            "target": "deploy@example.com:/srv/uploads/"
+          },
+          "before": "本地源内容\nproject/\n├── index.html\n├── .env.example\n└── assets/\n    └── app.css\n\n远程主机目标目录\n/srv/uploads/\n└── keep.txt",
+          "after": "远程主机目标目录\n/srv/uploads/\n├── keep.txt         ← 原有文件保留\n└── project/         ← 保留源文件夹这一层\n    ├── index.html\n    ├── .env.example\n    └── assets/\n        └── app.css\n\n本地源内容保持原样。",
+          "steps": [
+            "读取源文件夹，并递归读取内部内容。",
+            "通过 SSH 将数据上传到远程主机。",
+            "写入目标目录；同名文件可能被覆盖，其他文件保留。"
+          ],
+          "takeaways": [
+            "区别：整个文件夹复制后是 uploads/project/index.html；仅复制内容后是 uploads/index.html。",
+            "复制完成后，源内容仍然存在。",
+            "中途失败可能留下部分文件；应检查退出状态和目标内容后再确认完成。"
+          ]
+        }
+      }
+    },
+    {
+      "id": "upload-contents",
+      "title": "发送文件夹内所有文件到远程目录",
+      "description": "复制文件夹中的全部内容，包含子目录与隐藏文件，不额外套一层文件夹。远程目标目录需已存在。",
+      "defaults": {
+        "recursive": true
+      },
+      "sourceSuffix": "/.",
+      "labels": {
+        "source": "发送哪个文件夹中的内容？",
+        "target": "发送到哪个远程目录？"
+      },
+      "placeholders": {
+        "source": "./project",
+        "target": "user@example.com:/srv/uploads/"
+      },
+      "result": {
+        "before": [
+          "本地源文件夹：{source}，需要存在且可读取。",
+          "远程目标目录：{target}，需要已存在且可写；现有文件未检测。"
+        ],
+        "after": [
+          "目标目录直接接收源文件夹中的文件、子目录和隐藏文件，不增加源文件夹这一层。",
+          "内容复制到：{target}。",
+          "本地源文件夹及其内容保留，不移动、不删除。",
+          "目标同名文件可能被覆盖；目标中其他文件保留，不执行镜像清理。"
+        ],
+        "example": {
+          "title": "发送文件夹内所有文件到远程目录：一个具体例子",
+          "assumptions": [
+            "以下文件名为教学示例，不代表已读取你的文件。",
+            "假设目标目录已存在，原有 keep.txt，传输与认证成功。"
+          ],
+          "values": {
+            "source": "./project",
+            "target": "deploy@example.com:/srv/uploads/"
+          },
+          "before": "本地源内容\nproject/\n├── index.html\n├── .env.example\n└── assets/\n    └── app.css\n\n远程主机目标目录\n/srv/uploads/\n└── keep.txt",
+          "after": "远程主机目标目录\n/srv/uploads/\n├── keep.txt         ← 原有文件保留\n├── index.html       ← 新增或覆盖\n├── .env.example     ← 隐藏文件也复制\n└── assets/\n    └── app.css\n\n本地源内容保持原样。",
+          "steps": [
+            "读取源文件夹中的全部内容，包括隐藏文件和子目录。",
+            "通过 SSH 将数据上传到远程主机。",
+            "写入目标目录；同名文件可能被覆盖，其他文件保留。"
+          ],
+          "takeaways": [
+            "区别：整个文件夹复制后是 uploads/project/index.html；仅复制内容后是 uploads/index.html。",
+            "复制完成后，源内容仍然存在。",
+            "中途失败可能留下部分文件；应检查退出状态和目标内容后再确认完成。"
+          ]
+        }
+      }
+    },
+    {
+      "id": "download-file",
+      "title": "下载远程文件到本地",
+      "description": "从远程主机取回一个文件。",
+      "defaults": {
+        "recursive": false
+      },
+      "labels": {
+        "source": "下载哪个远程文件？",
+        "target": "保存到哪个本地目录？"
+      },
+      "placeholders": {
+        "source": "user@example.com:/srv/report.pdf",
+        "target": "./downloads/"
+      },
+      "result": {
+        "before": [
+          "远程源文件：{source}，需要存在且可读取。",
+          "本地目标目录：{target}，需要已存在且可写；现有文件未检测。"
+        ],
+        "after": [
+          "目标目录内写入文件：{resultPath}。",
+          "远程源文件保留，不移动、不删除。",
+          "目标同名文件可能被覆盖；目标中其他文件保留，不执行镜像清理。"
+        ],
+        "example": {
+          "title": "下载远程文件到本地：一个具体例子",
+          "assumptions": [
+            "以下文件名为教学示例，不代表已读取你的文件。",
+            "假设目标目录已存在，原有 keep.txt，传输与认证成功。"
+          ],
+          "values": {
+            "source": "deploy@example.com:/srv/report.pdf",
+            "target": "./downloads/"
+          },
+          "before": "远程主机源内容\nreport.pdf\n\n本地目标目录\n./downloads/\n└── keep.txt",
+          "after": "本地目标目录\n./downloads/\n├── keep.txt         ← 原有文件保留\n└── report.pdf       ← 新增或覆盖\n\n远程主机源内容保持原样。",
+          "steps": [
+            "读取源文件 report.pdf。",
+            "通过 SSH 将数据下载到本地。",
+            "写入目标目录；同名文件可能被覆盖，其他文件保留。"
+          ],
+          "takeaways": [
+            "目标中没有 report.pdf 时新增；已有同名文件时可能覆盖其内容。",
+            "复制完成后，源内容仍然存在。",
+            "中途失败可能留下部分文件；应检查退出状态和目标内容后再确认完成。"
+          ]
+        }
+      }
+    },
+    {
+      "id": "download-directory",
+      "title": "下载远程文件夹到本地",
+      "description": "递归下载整个远程文件夹。",
+      "defaults": {
+        "recursive": true
+      },
+      "labels": {
+        "source": "下载哪个远程文件夹？",
+        "target": "保存到哪个本地目录？"
+      },
+      "placeholders": {
+        "source": "user@example.com:/srv/project",
+        "target": "./downloads/"
+      },
+      "result": {
+        "before": [
+          "远程源文件夹：{source}，需要存在且可读取。",
+          "本地目标目录：{target}，需要已存在且可写；现有文件未检测。"
+        ],
+        "after": [
+          "目标目录内新增或合并文件夹：{resultPath}。",
+          "远程源文件夹及其内容保留，不移动、不删除。",
+          "目标同名文件可能被覆盖；目标中其他文件保留，不执行镜像清理。"
+        ],
+        "example": {
+          "title": "下载远程文件夹到本地：一个具体例子",
+          "assumptions": [
+            "以下文件名为教学示例，不代表已读取你的文件。",
+            "假设目标目录已存在，原有 keep.txt，传输与认证成功。"
+          ],
+          "values": {
+            "source": "deploy@example.com:/srv/project",
+            "target": "./downloads/"
+          },
+          "before": "远程主机源内容\nproject/\n├── index.html\n├── .env.example\n└── assets/\n    └── app.css\n\n本地目标目录\n./downloads/\n└── keep.txt",
+          "after": "本地目标目录\n./downloads/\n├── keep.txt         ← 原有文件保留\n└── project/         ← 保留源文件夹这一层\n    ├── index.html\n    ├── .env.example\n    └── assets/\n        └── app.css\n\n远程主机源内容保持原样。",
+          "steps": [
+            "读取源文件夹，并递归读取内部内容。",
+            "通过 SSH 将数据下载到本地。",
+            "写入目标目录；同名文件可能被覆盖，其他文件保留。"
+          ],
+          "takeaways": [
+            "区别：整个文件夹复制后是 uploads/project/index.html；仅复制内容后是 uploads/index.html。",
+            "复制完成后，源内容仍然存在。",
+            "中途失败可能留下部分文件；应检查退出状态和目标内容后再确认完成。"
+          ]
+        }
+      }
+    }
+  ],
+  "result": {
+    "before": [
+      "源路径：{source}，需要存在且可读取。",
+      "目标路径：{target}，需要有写入权限；现有内容未检测。"
+    ],
+    "after": [
+      "将源内容复制到目标路径：{target}。",
+      "源内容保留；目标同名文件可能被覆盖，其他文件不会自动清理。"
+    ]
+  }
+}

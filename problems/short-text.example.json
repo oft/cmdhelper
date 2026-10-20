@@ -1,0 +1,55 @@
+{
+  "id": "short-text-example",
+  "templateId": "send-short-text",
+  "utterance": "我想发送一句话给另一台机器",
+  "entities": [
+    {
+      "id": "source",
+      "type": "device",
+      "label": "源设备"
+    },
+    {
+      "id": "target",
+      "type": "device",
+      "label": "目标设备"
+    },
+    {
+      "id": "message",
+      "type": "short-text",
+      "label": "待传递文本"
+    }
+  ],
+  "initialState": [
+    "文本位于源设备",
+    "目标设备可直接操作性未知"
+  ],
+  "goal": [
+    "目标设备获得内容一致的文本"
+  ],
+  "invariants": [
+    "保留源文本",
+    "仅使用允许传递此内容的通道"
+  ],
+  "resources": {
+    "setup": "unknown",
+    "install": "unknown",
+    "configure": "unknown",
+    "physical": "unknown",
+    "channel": "unknown",
+    "toolReady": "unknown",
+    "priority": "unknown",
+    "frequency": "unknown"
+  },
+  "evidence": {
+    "physical": {
+      "value": null,
+      "source": "user",
+      "status": "unknown",
+      "note": "用户尚未回答，不能推断为可直接操作"
+    }
+  },
+  "acceptance": [
+    "目标位置文本经核对与原文一致"
+  ],
+  "selectedRoute": null
+}

@@ -1,0 +1,241 @@
+{
+  "version": 1,
+  "tools": [
+    {
+      "id": "scp",
+      "title": "scp",
+      "source": "https://man.openbsd.org/scp.1",
+      "preconditions": [
+        {
+          "id": "scp-supported",
+          "label": "本机平台支持 scp，且具备可用安装途径",
+          "verify": "确认操作系统、工具发行版与所需版本兼容；已有可用安装也可确认此项。",
+          "remedy": "选择受支持的发行版或运行环境；需要安装时先确认安装权限和来源。",
+          "scope": "本机",
+          "kind": "platform"
+        },
+        {
+          "id": "scp-installed",
+          "label": "本机已安装可调用的 scp",
+          "verify": "在实际执行环境中查询 scp 的可执行路径及版本；不只检查安装包是否下载。",
+          "remedy": "按平台安装 scp，修复 PATH 后重新验证；无安装权限时选其他方案。",
+          "scope": "本机",
+          "kind": "installation"
+        },
+        {
+          "id": "ssh-supported",
+          "label": "本机平台支持 ssh，且具备可用安装途径",
+          "verify": "确认操作系统、工具发行版与所需版本兼容；已有可用安装也可确认此项。",
+          "remedy": "选择受支持的发行版或运行环境；需要安装时先确认安装权限和来源。",
+          "scope": "本机",
+          "kind": "platform"
+        },
+        {
+          "id": "ssh-installed",
+          "label": "本机已安装可调用的 ssh",
+          "verify": "在实际执行环境中查询 ssh 的可执行路径及版本；不只检查安装包是否下载。",
+          "remedy": "按平台安装 ssh，修复 PATH 后重新验证；无安装权限时选其他方案。",
+          "scope": "本机",
+          "kind": "installation"
+        },
+        {
+          "id": "ssh-reachable",
+          "label": "本机能连接目标设备的 SSH 端口",
+          "verify": "确认目标地址和端口；测试 TCP 连接，并实际尝试 SSH 认证。仅 ping 成功不能证明 SSH 可用。",
+          "remedy": "检查路由、VPN、防火墙及 SSH 服务监听；无法建立路径时改用其他传输方式。",
+          "scope": "设备间",
+          "kind": "condition"
+        },
+        {
+          "id": "ssh-service",
+          "label": "目标设备已启用 SSH 服务",
+          "verify": "由目标设备管理员确认 SSH 服务运行并监听预期端口。",
+          "remedy": "确认目标平台支持 SSH 服务，具备安装及启用权限后再安装或启用。",
+          "scope": "远端",
+          "kind": "condition"
+        },
+        {
+          "id": "authentication",
+          "label": "目标身份已核对，账号认证可用",
+          "verify": "核对主机指纹，确认账号和密钥或其他认证方式可用。",
+          "remedy": "向管理员获取正确账号和授权；不要绕过主机身份核对。",
+          "scope": "远端",
+          "kind": "condition"
+        },
+        {
+          "id": "sftp-service",
+          "label": "当前方案使用的远端 SFTP 子系统可用",
+          "verify": "确认本机使用默认 SFTP 模式的现代 OpenSSH scp，并实际测试远端 SFTP 会话。",
+          "remedy": "请管理员启用 SFTP。旧式 SCP 协议需另行检查远端 scp 与远程 Shell，本方案不自动切换。",
+          "scope": "远端",
+          "kind": "condition"
+        }
+      ]
+    },
+    {
+      "id": "rsync",
+      "title": "rsync",
+      "source": "https://download.samba.org/pub/rsync/rsync.1.html",
+      "preconditions": [
+        {
+          "id": "rsync-supported",
+          "label": "本机平台支持 rsync，且具备可用安装途径",
+          "verify": "确认操作系统、工具发行版与所需版本兼容；已有可用安装也可确认此项。",
+          "remedy": "选择受支持的发行版或运行环境；需要安装时先确认安装权限和来源。",
+          "scope": "本机",
+          "kind": "platform"
+        },
+        {
+          "id": "rsync-installed",
+          "label": "本机已安装可调用的 rsync",
+          "verify": "在实际执行环境中查询 rsync 的可执行路径及版本；不只检查安装包是否下载。",
+          "remedy": "按平台安装 rsync，修复 PATH 后重新验证；无安装权限时选其他方案。",
+          "scope": "本机",
+          "kind": "installation"
+        },
+        {
+          "id": "ssh-supported",
+          "label": "本机平台支持 ssh，且具备可用安装途径",
+          "verify": "确认操作系统、工具发行版与所需版本兼容；已有可用安装也可确认此项。",
+          "remedy": "选择受支持的发行版或运行环境；需要安装时先确认安装权限和来源。",
+          "scope": "本机",
+          "kind": "platform"
+        },
+        {
+          "id": "ssh-installed",
+          "label": "本机已安装可调用的 ssh",
+          "verify": "在实际执行环境中查询 ssh 的可执行路径及版本；不只检查安装包是否下载。",
+          "remedy": "按平台安装 ssh，修复 PATH 后重新验证；无安装权限时选其他方案。",
+          "scope": "本机",
+          "kind": "installation"
+        },
+        {
+          "id": "ssh-reachable",
+          "label": "本机能连接目标设备的 SSH 端口",
+          "verify": "确认目标地址和端口；测试 TCP 连接，并实际尝试 SSH 认证。仅 ping 成功不能证明 SSH 可用。",
+          "remedy": "检查路由、VPN、防火墙及 SSH 服务监听；无法建立路径时改用其他传输方式。",
+          "scope": "设备间",
+          "kind": "condition"
+        },
+        {
+          "id": "ssh-service",
+          "label": "目标设备已启用 SSH 服务",
+          "verify": "由目标设备管理员确认 SSH 服务运行并监听预期端口。",
+          "remedy": "确认目标平台支持 SSH 服务，具备安装及启用权限后再安装或启用。",
+          "scope": "远端",
+          "kind": "condition"
+        },
+        {
+          "id": "authentication",
+          "label": "目标身份已核对，账号认证可用",
+          "verify": "核对主机指纹，确认账号和密钥或其他认证方式可用。",
+          "remedy": "向管理员获取正确账号和授权；不要绕过主机身份核对。",
+          "scope": "远端",
+          "kind": "condition"
+        },
+        {
+          "id": "remote-rsync-supported",
+          "label": "远端平台支持 rsync，且具备可用安装途径",
+          "verify": "确认操作系统、工具发行版与所需版本兼容；已有可用安装也可确认此项。",
+          "remedy": "选择受支持的发行版或运行环境；需要安装时先确认安装权限和来源。",
+          "scope": "远端",
+          "kind": "platform"
+        },
+        {
+          "id": "remote-rsync-installed",
+          "label": "远端已安装可调用的 rsync",
+          "verify": "在实际执行环境中查询 rsync 的可执行路径及版本；不只检查安装包是否下载。",
+          "remedy": "按平台安装 rsync，修复 PATH 后重新验证；无安装权限时选其他方案。",
+          "scope": "远端",
+          "kind": "installation"
+        }
+      ]
+    },
+    {
+      "id": "ffmpeg",
+      "title": "ffmpeg",
+      "source": "https://ffmpeg.org/ffmpeg.html#Streamcopy",
+      "preconditions": [
+        {
+          "id": "ffmpeg-supported",
+          "label": "本机平台支持 ffmpeg，且具备可用安装途径",
+          "verify": "确认操作系统、工具发行版与所需版本兼容；已有可用安装也可确认此项。",
+          "remedy": "选择受支持的发行版或运行环境；需要安装时先确认安装权限和来源。",
+          "scope": "本机",
+          "kind": "platform"
+        },
+        {
+          "id": "ffmpeg-installed",
+          "label": "本机已安装可调用的 ffmpeg",
+          "verify": "在实际执行环境中查询 ffmpeg 的可执行路径及版本；不只检查安装包是否下载。",
+          "remedy": "按平台安装 ffmpeg，修复 PATH 后重新验证；无安装权限时选其他方案。",
+          "scope": "本机",
+          "kind": "installation"
+        },
+        {
+          "id": "input-readable",
+          "label": "输入视频存在且可读取",
+          "verify": "检查输入文件路径、权限，并确认能识别输入媒体格式。",
+          "remedy": "更正文件路径、读取权限，或使用支持该格式的构建。",
+          "scope": "本机",
+          "kind": "condition"
+        },
+        {
+          "id": "output-writable",
+          "label": "输出目录可写、空间足够且覆盖策略明确",
+          "verify": "检查输出路径、磁盘空间和已有同名文件。",
+          "remedy": "创建可写目录、释放空间，避免未经确认覆盖原文件。",
+          "scope": "本机",
+          "kind": "condition"
+        }
+      ]
+    },
+    {
+      "id": "ssh",
+      "title": "ssh",
+      "source": "https://man.openbsd.org/ssh.1",
+      "preconditions": [
+        {
+          "id": "ssh-supported",
+          "label": "本机平台支持 ssh，且具备可用安装途径",
+          "verify": "确认操作系统、工具发行版与所需版本兼容；已有可用安装也可确认此项。",
+          "remedy": "选择受支持的发行版或运行环境；需要安装时先确认安装权限和来源。",
+          "scope": "本机",
+          "kind": "platform"
+        },
+        {
+          "id": "ssh-installed",
+          "label": "本机已安装可调用的 ssh",
+          "verify": "在实际执行环境中查询 ssh 的可执行路径及版本；不只检查安装包是否下载。",
+          "remedy": "按平台安装 ssh，修复 PATH 后重新验证；无安装权限时选其他方案。",
+          "scope": "本机",
+          "kind": "installation"
+        },
+        {
+          "id": "ssh-reachable",
+          "label": "本机能连接目标设备的 SSH 端口",
+          "verify": "确认目标地址和端口；测试 TCP 连接，并实际尝试 SSH 认证。仅 ping 成功不能证明 SSH 可用。",
+          "remedy": "检查路由、VPN、防火墙及 SSH 服务监听；无法建立路径时改用其他传输方式。",
+          "scope": "设备间",
+          "kind": "condition"
+        },
+        {
+          "id": "ssh-service",
+          "label": "目标设备已启用 SSH 服务",
+          "verify": "由目标设备管理员确认 SSH 服务运行并监听预期端口。",
+          "remedy": "确认目标平台支持 SSH 服务，具备安装及启用权限后再安装或启用。",
+          "scope": "远端",
+          "kind": "condition"
+        },
+        {
+          "id": "authentication",
+          "label": "目标身份已核对，账号认证可用",
+          "verify": "核对主机指纹，确认账号和密钥或其他认证方式可用。",
+          "remedy": "向管理员获取正确账号和授权；不要绕过主机身份核对。",
+          "scope": "远端",
+          "kind": "condition"
+        }
+      ]
+    }
+  ]
+}

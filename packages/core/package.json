@@ -1,0 +1,14 @@
+{
+  "name": "@cmdhelper/core",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": "./src/index.js",
+  "files": [
+    "src",
+    "data"
+  ],
+  "scripts": {
+    "prepack": "node ../../scripts/prepare-packages.mjs"
+  },
+  "license": "MIT"
+}

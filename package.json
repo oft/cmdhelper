@@ -1,0 +1,13 @@
+{
+  "name": "cmdhelper-workspace",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.1",
+  "scripts": {
+    "dev": "node scripts/prepare-packages.mjs && pnpm --filter @cmdhelper/web dev",
+    "build": "node scripts/prepare-packages.mjs && pnpm --filter @cmdhelper/web build",
+    "test": "node scripts/prepare-packages.mjs && node --test packages/core/test/*.test.js",
+    "cli": "node scripts/prepare-packages.mjs && node apps/cli/bin/cmdhelper.js",
+    "prepare:packages": "node scripts/prepare-packages.mjs"
+  }
+}

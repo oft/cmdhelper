@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "cmdhelper 标准问题实例 v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "templateId",
+    "utterance",
+    "entities",
+    "initialState",
+    "goal",
+    "invariants",
+    "resources",
+    "evidence",
+    "acceptance"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "templateId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "utterance": {
+      "type": "string",
+      "minLength": 1
+    },
+    "entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "device",
+              "file",
+              "directory",
+              "short-text",
+              "video",
+              "service"
+            ]
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "initialState": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "goal": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "invariants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "acceptance": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "setup": {
+          "enum": [
+            "unknown",
+            "none",
+            "small",
+            "flexible"
+          ]
+        },
+        "install": {
+          "enum": [
+            "unknown",
+            "no",
+            "yes"
+          ]
+        },
+        "configure": {
+          "enum": [
+            "unknown",
+            "no",
+            "yes"
+          ]
+        },
+        "physical": {
+          "enum": [
+            "unknown",
+            "yes",
+            "no"
+          ]
+        },
+        "channel": {
+          "enum": [
+            "unknown",
+            "yes",
+            "no"
+          ]
+        },
+        "toolReady": {
+          "enum": [
+            "unknown",
+            "yes",
+            "no"
+          ]
+        },
+        "priority": {
+          "enum": [
+            "unknown",
+            "quick",
+            "repeat"
+          ]
+        },
+        "frequency": {
+          "enum": [
+            "unknown",
+            "once",
+            "repeat"
+          ]
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "value",
+          "source",
+          "status"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "value": {},
+          "source": {
+            "enum": [
+              "user",
+              "inferred",
+              "observed"
+            ]
+          },
+          "status": {
+            "enum": [
+              "unknown",
+              "confirmed"
+            ]
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "selectedRoute": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

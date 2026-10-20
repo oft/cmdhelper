@@ -1,0 +1,857 @@
+{
+  "version": 1,
+  "dimensions": [
+    {
+      "id": "object",
+      "label": "处理什么对象？",
+      "options": [
+        {
+          "id": "file",
+          "label": "文件"
+        },
+        {
+          "id": "directory",
+          "label": "文件夹"
+        },
+        {
+          "id": "video",
+          "label": "视频文件"
+        },
+        {
+          "id": "device",
+          "label": "设备 / 远程服务"
+        }
+      ]
+    },
+    {
+      "id": "space",
+      "label": "对象在哪里变化？",
+      "options": [
+        {
+          "id": "remote",
+          "label": "本机 → 另一台设备"
+        },
+        {
+          "id": "local",
+          "label": "同一台设备"
+        }
+      ]
+    },
+    {
+      "id": "goal",
+      "label": "希望发生什么变化？",
+      "options": [
+        {
+          "id": "transfer",
+          "label": "复制到另一个位置"
+        },
+        {
+          "id": "convert",
+          "label": "改变格式 / 编码"
+        },
+        {
+          "id": "operate",
+          "label": "远程操作设备"
+        },
+        {
+          "id": "access",
+          "label": "访问远程服务"
+        }
+      ]
+    },
+    {
+      "id": "time",
+      "label": "时间与频率",
+      "options": [
+        {
+          "id": "once",
+          "label": "一次性处理"
+        },
+        {
+          "id": "repeat",
+          "label": "反复同步"
+        }
+      ]
+    },
+    {
+      "id": "connection",
+      "label": "设备连接条件",
+      "options": [
+        {
+          "id": "unknown",
+          "label": "还不确定"
+        },
+        {
+          "id": "ssh",
+          "label": "可通过 SSH 连接"
+        },
+        {
+          "id": "offline",
+          "label": "目前无法联网"
+        }
+      ]
+    },
+    {
+      "id": "quality",
+      "label": "视频处理要求",
+      "options": [
+        {
+          "id": "unknown",
+          "label": "还不确定"
+        },
+        {
+          "id": "container",
+          "label": "只换封装，保留原编码"
+        },
+        {
+          "id": "encode",
+          "label": "需要改变编码 / 画质"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "title": "把文件发到服务器",
+      "values": {
+        "object": "file",
+        "space": "remote",
+        "goal": "transfer",
+        "time": "once",
+        "connection": "ssh",
+        "quality": "unknown"
+      }
+    },
+    {
+      "title": "经常同步一个文件夹",
+      "values": {
+        "object": "directory",
+        "space": "remote",
+        "goal": "transfer",
+        "time": "repeat",
+        "connection": "ssh",
+        "quality": "unknown"
+      }
+    },
+    {
+      "title": "视频换格式",
+      "values": {
+        "object": "video",
+        "space": "local",
+        "goal": "convert",
+        "time": "once",
+        "connection": "unknown",
+        "quality": "container"
+      }
+    },
+    {
+      "title": "连接服务器操作",
+      "values": {
+        "object": "device",
+        "space": "remote",
+        "goal": "operate",
+        "time": "once",
+        "connection": "ssh",
+        "quality": "unknown"
+      }
+    }
+  ],
+  "solutions": [
+    {
+      "id": "scp",
+      "title": "SCP · 单次文件复制",
+      "match": {
+        "object": [
+          "file",
+          "directory",
+          "video"
+        ],
+        "space": [
+          "remote"
+        ],
+        "goal": [
+          "transfer"
+        ],
+        "time": [
+          "once"
+        ]
+      },
+      "requirements": {
+        "connection": [
+          "ssh"
+        ]
+      },
+      "reason": "改变文件所在位置，复制后源内容保留；适合已经能 SSH 连接的两台设备。",
+      "before": "本机设备 A\n└── 源文件 / 文件夹\n\n远程设备 B\n└── 目标目录",
+      "after": "本机设备 A\n└── 源内容保留\n\n远程设备 B\n└── 新增副本（同名内容可能覆盖）",
+      "steps": [
+        "确认设备 B 的地址、账号与 SSH 端口。",
+        "选择文件或文件夹，填写源路径和目标目录。",
+        "复制完成后检查退出状态及目标内容。"
+      ],
+      "tradeoffs": [
+        "适合单次复制；反复更新目录时可比较 rsync。",
+        "需要目标写入权限，目录复制需要递归。"
+      ],
+      "source": "https://man.openbsd.org/scp.1",
+      "assistant": {
+        "command": "scp",
+        "scenario": "upload-file"
+      },
+      "tool": "scp",
+      "preconditions": [
+        {
+          "id": "source-readable",
+          "label": "源文件存在且可读取",
+          "verify": "在实际源设备检查路径与读取权限；目录还需检查内部内容可读取。",
+          "remedy": "更正路径或申请源内容读取权限。",
+          "scope": "源设备",
+          "kind": "condition"
+        },
+        {
+          "id": "target-writable",
+          "label": "目标目录存在、可写且空间足够",
+          "verify": "在目标设备确认目录、写入权限和可用空间。",
+          "remedy": "创建目标目录、申请权限或释放空间后重新检查。",
+          "scope": "目标设备",
+          "kind": "condition"
+        },
+        {
+          "id": "overwrite-policy",
+          "label": "已确认同名文件与覆盖策略",
+          "verify": "检查目标同名文件，确认可覆盖，或先备份 / 改用新目录。",
+          "remedy": "先备份或选择新目标目录，再确认传输。",
+          "scope": "目标设备",
+          "kind": "condition"
+        }
+      ],
+      "acceptance": [
+        {
+          "id": "transfer-complete",
+          "label": "传输进程成功结束",
+          "verify": "检查退出码和错误输出，不只看进度达到 100%。",
+          "remedy": "根据错误恢复连接、权限或空间；重新传输后再检查。",
+          "scope": "执行结果",
+          "kind": "condition"
+        },
+        {
+          "id": "content-verified",
+          "label": "目标内容及原有数据符合预期",
+          "verify": "核对目录层级、文件清单与大小；需要内容完整性保证时比对校验和，并检查覆盖与保留结果。",
+          "remedy": "定位缺失或异常文件后重新传输；覆盖问题从备份恢复。",
+          "scope": "执行结果",
+          "kind": "condition"
+        }
+      ],
+      "checkTree": {
+        "id": "goal",
+        "title": "所选方案是否符合目标与约束？",
+        "priority": 0,
+        "reason": "先确认做什么、在哪做，以及是否符合方案的适用条件。",
+        "checks": [],
+        "children": [
+          {
+            "id": "feasibility",
+            "title": "这条路线在环境中是否可行？",
+            "priority": 1,
+            "reason": "先判断平台与连接等硬条件；路线不可行时，先调整方案。",
+            "checks": [
+              "scp-supported",
+              "ssh-supported",
+              "ssh-reachable",
+              "ssh-service"
+            ],
+            "children": [
+              {
+                "id": "environment",
+                "title": "执行能力是否就绪？",
+                "priority": 2,
+                "reason": "路线可行后，再确认安装、认证及服务能力。",
+                "checks": [
+                  "scp-installed",
+                  "ssh-installed",
+                  "authentication",
+                  "sftp-service"
+                ],
+                "children": [
+                  {
+                    "id": "resources",
+                    "title": "本次输入与操作细节是否就绪？",
+                    "priority": 3,
+                    "reason": "上层通过后，才检查具体文件、端口、编码与覆盖策略。",
+                    "checks": [
+                      "source-readable",
+                      "target-writable",
+                      "overwrite-policy"
+                    ],
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "rsync",
+      "title": "rsync · 反复同步文件",
+      "match": {
+        "object": [
+          "file",
+          "directory",
+          "video"
+        ],
+        "space": [
+          "remote"
+        ],
+        "goal": [
+          "transfer"
+        ],
+        "time": [
+          "repeat"
+        ]
+      },
+      "requirements": {
+        "connection": [
+          "ssh"
+        ]
+      },
+      "reason": "问题包含时间维度：同一批数据反复变化，可按差异传输，避免每次完整重传。",
+      "before": "设备 A\n└── 持续更新的源目录\n\n设备 B\n└── 上一次的副本",
+      "after": "设备 A\n└── 源目录保留\n\n设备 B\n└── 更新的副本",
+      "steps": [
+        "确认两端有 rsync，并能通过 SSH 连接。",
+        "先用 dry-run 检查会更新的内容。",
+        "确认路径、同步方向和删除策略后再同步。"
+      ],
+      "tradeoffs": [
+        "不自动等于双向同步，也不自动等于定时任务。",
+        "Windows 通常需要 WSL 等可用环境；需确认实际安装。",
+        "删除目标多余文件是额外策略，不能默认开启。"
+      ],
+      "source": "https://download.samba.org/pub/rsync/rsync.1.html",
+      "assistant": null,
+      "tool": "rsync",
+      "preconditions": [
+        {
+          "id": "source-readable",
+          "label": "源文件存在且可读取",
+          "verify": "在实际源设备检查路径与读取权限；目录还需检查内部内容可读取。",
+          "remedy": "更正路径或申请源内容读取权限。",
+          "scope": "源设备",
+          "kind": "condition"
+        },
+        {
+          "id": "target-writable",
+          "label": "目标目录存在、可写且空间足够",
+          "verify": "在目标设备确认目录、写入权限和可用空间。",
+          "remedy": "创建目标目录、申请权限或释放空间后重新检查。",
+          "scope": "目标设备",
+          "kind": "condition"
+        },
+        {
+          "id": "overwrite-policy",
+          "label": "已确认同名文件与覆盖策略",
+          "verify": "检查目标同名文件，确认可覆盖，或先备份 / 改用新目录。",
+          "remedy": "先备份或选择新目标目录，再确认传输。",
+          "scope": "目标设备",
+          "kind": "condition"
+        }
+      ],
+      "acceptance": [
+        {
+          "id": "transfer-complete",
+          "label": "传输进程成功结束",
+          "verify": "检查退出码和错误输出，不只看进度达到 100%。",
+          "remedy": "根据错误恢复连接、权限或空间；重新传输后再检查。",
+          "scope": "执行结果",
+          "kind": "condition"
+        },
+        {
+          "id": "content-verified",
+          "label": "目标内容及原有数据符合预期",
+          "verify": "核对目录层级、文件清单与大小；需要内容完整性保证时比对校验和，并检查覆盖与保留结果。",
+          "remedy": "定位缺失或异常文件后重新传输；覆盖问题从备份恢复。",
+          "scope": "执行结果",
+          "kind": "condition"
+        }
+      ],
+      "checkTree": {
+        "id": "goal",
+        "title": "所选方案是否符合目标与约束？",
+        "priority": 0,
+        "reason": "先确认做什么、在哪做，以及是否符合方案的适用条件。",
+        "checks": [],
+        "children": [
+          {
+            "id": "feasibility",
+            "title": "这条路线在环境中是否可行？",
+            "priority": 1,
+            "reason": "先判断平台与连接等硬条件；路线不可行时，先调整方案。",
+            "checks": [
+              "rsync-supported",
+              "ssh-supported",
+              "ssh-reachable",
+              "ssh-service",
+              "remote-rsync-supported"
+            ],
+            "children": [
+              {
+                "id": "environment",
+                "title": "执行能力是否就绪？",
+                "priority": 2,
+                "reason": "路线可行后，再确认安装、认证及服务能力。",
+                "checks": [
+                  "rsync-installed",
+                  "ssh-installed",
+                  "authentication",
+                  "remote-rsync-installed"
+                ],
+                "children": [
+                  {
+                    "id": "resources",
+                    "title": "本次输入与操作细节是否就绪？",
+                    "priority": 3,
+                    "reason": "上层通过后，才检查具体文件、端口、编码与覆盖策略。",
+                    "checks": [
+                      "source-readable",
+                      "target-writable",
+                      "overwrite-policy"
+                    ],
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "remux",
+      "title": "FFmpeg · 更换视频封装",
+      "match": {
+        "object": [
+          "video"
+        ],
+        "space": [
+          "local"
+        ],
+        "goal": [
+          "convert"
+        ],
+        "time": [
+          "once",
+          "repeat"
+        ]
+      },
+      "requirements": {
+        "quality": [
+          "container"
+        ]
+      },
+      "reason": "只改变容器时，可以尝试流复制；无需解码和重新编码，前提是目标容器兼容原有媒体流。",
+      "before": "本机\n└── input.mkv\n    └── 原有视频 / 音频编码",
+      "after": "本机\n├── input.mkv（保留）\n└── output.mp4\n    └── 兼容的原有编码流",
+      "steps": [
+        "先确认原文件包含哪些视频、音频和字幕流。",
+        "检查目标容器是否支持需要保留的流。",
+        "使用流复制并验证输出文件与轨道。"
+      ],
+      "tradeoffs": [
+        "更换扩展名本身不等于转换封装。",
+        "流复制不降低码率、不改变分辨率；不兼容的流可能需要转码。",
+        "反复处理还需要额外的批处理或任务调度。"
+      ],
+      "source": "https://ffmpeg.org/ffmpeg.html#Streamcopy",
+      "assistant": null,
+      "tool": "ffmpeg",
+      "preconditions": [
+        {
+          "id": "container-compatible",
+          "label": "目标容器兼容需要保留的媒体流",
+          "verify": "检查视频、音频、字幕编码是否被目标容器支持；先用样本验证。",
+          "remedy": "改用兼容容器，或转码不兼容的媒体流。",
+          "scope": "本机",
+          "kind": "condition"
+        }
+      ],
+      "acceptance": [
+        {
+          "id": "media-verified",
+          "label": "输出媒体符合所选目标",
+          "verify": "确认输出文件可播放，检查流、编码、时长、画质与声音；确认原文件保留。",
+          "remedy": "查看转换日志，调整兼容性或编码参数，先用短样本重试。",
+          "scope": "执行结果",
+          "kind": "condition"
+        }
+      ],
+      "checkTree": {
+        "id": "goal",
+        "title": "所选方案是否符合目标与约束？",
+        "priority": 0,
+        "reason": "先确认做什么、在哪做，以及是否符合方案的适用条件。",
+        "checks": [],
+        "children": [
+          {
+            "id": "feasibility",
+            "title": "这条路线在环境中是否可行？",
+            "priority": 1,
+            "reason": "先判断平台与连接等硬条件；路线不可行时，先调整方案。",
+            "checks": [
+              "ffmpeg-supported"
+            ],
+            "children": [
+              {
+                "id": "environment",
+                "title": "执行能力是否就绪？",
+                "priority": 2,
+                "reason": "路线可行后，再确认安装、认证及服务能力。",
+                "checks": [
+                  "ffmpeg-installed"
+                ],
+                "children": [
+                  {
+                    "id": "resources",
+                    "title": "本次输入与操作细节是否就绪？",
+                    "priority": 3,
+                    "reason": "上层通过后，才检查具体文件、端口、编码与覆盖策略。",
+                    "checks": [
+                      "input-readable",
+                      "output-writable",
+                      "container-compatible"
+                    ],
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "transcode",
+      "title": "FFmpeg · 视频重新编码",
+      "match": {
+        "object": [
+          "video"
+        ],
+        "space": [
+          "local"
+        ],
+        "goal": [
+          "convert"
+        ],
+        "time": [
+          "once",
+          "repeat"
+        ]
+      },
+      "requirements": {
+        "quality": [
+          "encode"
+        ]
+      },
+      "reason": "当目标是改变编码、分辨率或码率时，需要解码、处理并重新编码。",
+      "before": "本机\n└── 原视频\n    └── 原编码 / 分辨率 / 码率",
+      "after": "本机\n├── 原视频（保留）\n└── 输出视频\n    └── 目标编码 / 分辨率 / 码率",
+      "steps": [
+        "确定播放设备支持的目标编码。",
+        "根据质量、体积和处理时间选择参数。",
+        "先转换短片段，检查画质、声音和耗时，再处理完整文件。"
+      ],
+      "tradeoffs": [
+        "有损编码可能损失质量；体积、质量与速度需要权衡。",
+        "实际可用编码器取决于 FFmpeg 构建与设备能力。",
+        "批量处理需要额外组织输入和输出。"
+      ],
+      "source": "https://ffmpeg.org/ffmpeg.html#Transcoding",
+      "assistant": null,
+      "tool": "ffmpeg",
+      "preconditions": [
+        {
+          "id": "encoder-available",
+          "label": "所需解码器、编码器及相关滤镜可用",
+          "verify": "检查 FFmpeg 构建支持列表；先用短片段试转并检查播放结果。",
+          "remedy": "安装包含所需能力的构建，或选择可用编码器。",
+          "scope": "本机",
+          "kind": "condition"
+        }
+      ],
+      "acceptance": [
+        {
+          "id": "media-verified",
+          "label": "输出媒体符合所选目标",
+          "verify": "确认输出文件可播放，检查流、编码、时长、画质与声音；确认原文件保留。",
+          "remedy": "查看转换日志，调整兼容性或编码参数，先用短样本重试。",
+          "scope": "执行结果",
+          "kind": "condition"
+        }
+      ],
+      "checkTree": {
+        "id": "goal",
+        "title": "所选方案是否符合目标与约束？",
+        "priority": 0,
+        "reason": "先确认做什么、在哪做，以及是否符合方案的适用条件。",
+        "checks": [],
+        "children": [
+          {
+            "id": "feasibility",
+            "title": "这条路线在环境中是否可行？",
+            "priority": 1,
+            "reason": "先判断平台与连接等硬条件；路线不可行时，先调整方案。",
+            "checks": [
+              "ffmpeg-supported"
+            ],
+            "children": [
+              {
+                "id": "environment",
+                "title": "执行能力是否就绪？",
+                "priority": 2,
+                "reason": "路线可行后，再确认安装、认证及服务能力。",
+                "checks": [
+                  "ffmpeg-installed"
+                ],
+                "children": [
+                  {
+                    "id": "resources",
+                    "title": "本次输入与操作细节是否就绪？",
+                    "priority": 3,
+                    "reason": "上层通过后，才检查具体文件、端口、编码与覆盖策略。",
+                    "checks": [
+                      "input-readable",
+                      "output-writable",
+                      "encoder-available"
+                    ],
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ssh",
+      "title": "SSH · 远程终端",
+      "match": {
+        "object": [
+          "device"
+        ],
+        "space": [
+          "remote"
+        ],
+        "goal": [
+          "operate"
+        ],
+        "time": [
+          "once",
+          "repeat"
+        ]
+      },
+      "requirements": {
+        "connection": [
+          "ssh"
+        ]
+      },
+      "reason": "设备位置不变，改变的是操作入口：在本地建立到远程设备的命令会话。",
+      "before": "本机终端\n\n远程设备\n└── 待操作的命令环境",
+      "after": "本机终端 → SSH 加密连接\n                 └── 远程命令环境",
+      "steps": [
+        "确认主机地址、账号与认证方式。",
+        "核对服务器身份后登录。",
+        "在远程执行操作，结束时用 exit 返回本机。"
+      ],
+      "tradeoffs": [
+        "登录本身不传输文件；后续命令的影响由操作和账号权限决定。",
+        "反复执行任务需进一步考虑脚本、调度与失败处理。"
+      ],
+      "source": "https://man.openbsd.org/ssh.1",
+      "assistant": {
+        "command": "ssh",
+        "scenario": "login"
+      },
+      "tool": "ssh",
+      "preconditions": [],
+      "acceptance": [
+        {
+          "id": "session-verified",
+          "label": "登录或转发达到目标",
+          "verify": "登录：确认远程主机与账号；转发：从本机访问映射端口并确认目标服务响应。",
+          "remedy": "检查认证、服务端转发策略、目标服务地址及连接日志。",
+          "scope": "执行结果",
+          "kind": "condition"
+        }
+      ],
+      "checkTree": {
+        "id": "goal",
+        "title": "所选方案是否符合目标与约束？",
+        "priority": 0,
+        "reason": "先确认做什么、在哪做，以及是否符合方案的适用条件。",
+        "checks": [],
+        "children": [
+          {
+            "id": "feasibility",
+            "title": "这条路线在环境中是否可行？",
+            "priority": 1,
+            "reason": "先判断平台与连接等硬条件；路线不可行时，先调整方案。",
+            "checks": [
+              "ssh-supported",
+              "ssh-reachable",
+              "ssh-service"
+            ],
+            "children": [
+              {
+                "id": "environment",
+                "title": "执行能力是否就绪？",
+                "priority": 2,
+                "reason": "路线可行后，再确认安装、认证及服务能力。",
+                "checks": [
+                  "ssh-installed",
+                  "authentication"
+                ],
+                "children": [
+                  {
+                    "id": "resources",
+                    "title": "本次输入与操作细节是否就绪？",
+                    "priority": 3,
+                    "reason": "上层通过后，才检查具体文件、端口、编码与覆盖策略。",
+                    "checks": [],
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "tunnel",
+      "title": "SSH · 本地端口转发",
+      "match": {
+        "object": [
+          "device"
+        ],
+        "space": [
+          "remote"
+        ],
+        "goal": [
+          "access"
+        ],
+        "time": [
+          "once",
+          "repeat"
+        ]
+      },
+      "requirements": {
+        "connection": [
+          "ssh"
+        ]
+      },
+      "reason": "服务仍位于远程设备，通过 SSH 隧道在本机提供访问入口。",
+      "before": "本机\n└── 尚无转发入口\n\n远程设备\n└── 内部服务",
+      "after": "本机端口 → SSH 隧道\n                └── 远程视角的目标服务",
+      "steps": [
+        "确认 SSH 主机能够访问目标服务。",
+        "选择可用的本地端口和目标服务地址。",
+        "保持 SSH 连接，访问本机转发入口。"
+      ],
+      "tradeoffs": [
+        "隧道会随连接结束而停止。",
+        "目标服务地址从 SSH 主机视角解释。"
+      ],
+      "source": "https://man.openbsd.org/ssh.1",
+      "assistant": {
+        "command": "ssh",
+        "scenario": "tunnel"
+      },
+      "tool": "ssh",
+      "preconditions": [
+        {
+          "id": "forward-allowed",
+          "label": "服务器允许所需 TCP 转发",
+          "verify": "确认 SSH 服务端和账号策略允许此次转发。",
+          "remedy": "联系管理员确认并授予所需转发权限。",
+          "scope": "远端",
+          "kind": "condition"
+        },
+        {
+          "id": "local-port-free",
+          "label": "所选本地端口可绑定",
+          "verify": "检查端口占用、绑定地址与本机权限。",
+          "remedy": "选择未占用且有权限使用的本地端口。",
+          "scope": "本机",
+          "kind": "condition"
+        },
+        {
+          "id": "service-reachable",
+          "label": "SSH 主机可以访问目标服务",
+          "verify": "从 SSH 主机视角检查目标地址、端口与服务响应。",
+          "remedy": "修正目标地址或恢复目标服务及网络路径。",
+          "scope": "远端",
+          "kind": "condition"
+        }
+      ],
+      "acceptance": [
+        {
+          "id": "session-verified",
+          "label": "登录或转发达到目标",
+          "verify": "登录：确认远程主机与账号；转发：从本机访问映射端口并确认目标服务响应。",
+          "remedy": "检查认证、服务端转发策略、目标服务地址及连接日志。",
+          "scope": "执行结果",
+          "kind": "condition"
+        }
+      ],
+      "checkTree": {
+        "id": "goal",
+        "title": "所选方案是否符合目标与约束？",
+        "priority": 0,
+        "reason": "先确认做什么、在哪做，以及是否符合方案的适用条件。",
+        "checks": [],
+        "children": [
+          {
+            "id": "feasibility",
+            "title": "这条路线在环境中是否可行？",
+            "priority": 1,
+            "reason": "先判断平台与连接等硬条件；路线不可行时，先调整方案。",
+            "checks": [
+              "ssh-supported",
+              "ssh-reachable",
+              "ssh-service"
+            ],
+            "children": [
+              {
+                "id": "environment",
+                "title": "执行能力是否就绪？",
+                "priority": 2,
+                "reason": "路线可行后，再确认安装、认证及服务能力。",
+                "checks": [
+                  "ssh-installed",
+                  "authentication",
+                  "forward-allowed"
+                ],
+                "children": [
+                  {
+                    "id": "resources",
+                    "title": "本次输入与操作细节是否就绪？",
+                    "priority": 3,
+                    "reason": "上层通过后，才检查具体文件、端口、编码与覆盖策略。",
+                    "checks": [
+                      "local-port-free",
+                      "service-reachable"
+                    ],
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
