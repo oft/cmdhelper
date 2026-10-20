@@ -3,14 +3,23 @@
   "name": "@cmdhelper/core",
   "version": "0.1.0",
   "type": "module",
-  "exports": "./src/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "files": [
-    "src",
+    "dist",
     "data",
     "schemas"
   ],
   "scripts": {
-    "prepack": "node ../../scripts/prepare-packages.mjs"
+    "build": "tsc -p tsconfig.json",
+    "prepack": "pnpm --dir ../.. prepare:packages"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@cmdhelper/schema": "workspace:^"
+  }
 }

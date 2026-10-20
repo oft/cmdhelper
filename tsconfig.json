@@ -11,10 +11,21 @@
     "skipLibCheck": true,
     "types": [
       "node"
-    ]
+    ],
+    "resolveJsonModule": true,
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noEmitOnError": true
   },
   "include": [
-    "packages/schema/src/**/*.ts",
+    "packages/*/src/**/*.ts",
+    "packages/core/test/**/*.ts",
+    "apps/cli/src/**/*.ts",
     "scripts/**/*.ts"
   ]
 }

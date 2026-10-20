@@ -5,12 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "vite build"
+    "build": "vite build",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@cmdhelper/core": "workspace:*"
+    "@cmdhelper/core": "workspace:*",
+    "vue": "^3.5.44"
   },
   "devDependencies": {
-    "vite": "^7.1.0"
+    "@cmdhelper/schema": "workspace:*",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "happy-dom": "^21.0.3",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.0",
+    "vue-tsc": "^3.3.13"
   }
 }

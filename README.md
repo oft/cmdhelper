@@ -4,7 +4,7 @@
 
 ## 开发
 
-需要 Node.js 22.12+、pnpm 10。
+建议使用最新的 Node.js 22 LTS（至少 22.20）、pnpm 10。
 
 ```sh
 pnpm install
@@ -21,27 +21,27 @@ pnpm build
 
 - `commands/`：一级目录，每个命令一个 JSON，命令介绍、参数、提示、官方来源均结构化存储，是内容唯一维护入口。
 - `articles/`：一级目录，结构化文章 JSON，含元数据、摘要和分节正文。
-- `apps/web/`：Vite 网站，三栏助手、文章列表/详情、关于，使用 hash 路由适配静态托管。
+- `apps/web/`：Vue 3 + Vite 网站，三栏助手、文章列表/详情、关于，使用 hash 路由适配静态托管。
 - `apps/cli/`：npm 包 `cmdhelper`，交互式逐步输入、搜索和解释，只生成命令。
 - `packages/core/`：共享工具包 `@cmdhelper/core`，命令生成、验证、Shell 引用与模糊搜索。
 - `packages/core/data/`：命令资料的发布快照，修改根目录资料后运行 `pnpm prepare:packages` 同步。
 - `docs/`：网站构建产物。
 
-新增命令时在 `commands/` 添加 JSON，并更新资料同步脚本和 core 的导入注册；网页和 CLI 自动使用注册后的参数表。新增文章只需添加 `articles/*.json`。
+新增命令时在 `commands/` 添加 JSON，并更新资料同步脚本和 core 的导入注册；网页和 CLI 自动使用注册后的参数表。新增文章只需添加 `articles/*.json`。`pnpm prepare:packages`（以及 dev、test、build）会生成 `articles/index.ts`，按日期倒序、同日按标识排序；也可运行 `pnpm articles:generate` 单独更新。页面通过 `@articles` 导入索引，不扫描目录；索引不要手工编辑。开发服务运行期间新增或删除文章，也需重新生成索引。
 
 ## GitHub Pages
 
 目标： https://oft.github.io/cmdhelper/ 。Vite base 固定为 `/cmdhelper/`。仓库为 `oft/cmdhelper`，默认分支为 `main`。
 
 1. 首次运行前，在仓库 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**。
-2. 推送到 `main`，或在 **Actions → Build and deploy Pages → Run workflow** 手动运行。工作流安装依赖、测试并生成 `docs/`，上传该目录为 Pages artifact，再由部署任务发布。
+2. 向 `main` 提交 PR 时，工作流安装依赖、检查格式、测试并构建网站，不部署。推送到 `main`，或在 **Actions → Build and deploy Pages → Run workflow** 选择 `main` 手动运行时，额外上传 `docs/` 为 Pages artifact 并发布；其他分支手动运行仅检查和构建。
 3. 如果 `configure-pages` 报 `Get Pages site failed` / `Not Found`，先完成第 1 步，再重新运行工作流。默认 `GITHUB_TOKEN` 不能自动首次启用 Pages，直接添加 `enablement: true` 仍需要额外的授权令牌。
 
 使用此工作流时无需提交生成的 `docs/`。若选择手动构建并提交 `docs/`，则在 Source 选择 **Deploy from a branch**，指定 `main` 的 `/docs`，并停用此工作流；两种发布方式选择一种，避免重复部署。
 
 ## npm 发布准备
 
-目前没有发布 npm。先确认 `cmdhelper`、`@cmdhelper/core` 名称及发布权限。统一修改版本，运行 `pnpm prepare:packages`、`pnpm test`、`pnpm build`，分别在两个包目录 `pnpm pack` 检查。先发布 core，再发布 CLI；pnpm 打包会把 workspace 依赖改为真实版本。网站包和根包均为 private。首次发布还需要按实际 npm 账号配置访问权限或 Trusted Publishing。
+目前没有发布 npm。先确认 `cmdhelper`、`@cmdhelper/core`、`@cmdhelper/schema` 名称及发布权限。统一修改版本，运行 `pnpm prepare:packages`、`pnpm test`、`pnpm build`，分别在 schema、core、CLI 三个包目录 `pnpm pack` 检查。先发布 schema，再发布 core，最后发布 CLI；pnpm 打包会把 workspace 依赖改为真实版本。网站包和根包均为 private。首次发布还需要按实际 npm 账号配置访问权限或 Trusted Publishing。
 
 ## 使用边界
 
@@ -53,7 +53,7 @@ pnpm build
 
 顶部“问题导航”按对象、位置、目标变化、时间频率、连接条件、媒体要求匹配方案。提供设备/文件状态示意、前后变化、选择依据、步骤、限制与官方来源。SCP、SSH 方案可进入命令助手；rsync、FFmpeg 当前只有导航资料，没有参数编辑器。
 
-`problems/catalog.json` 是根目录结构化问题资料，含维度、快捷问题、方案匹配规则、前置条件和说明。`packages/core/src/problems.js` 提供无 UI 的规则匹配，后续可供 CLI 或独立项目复用。未满足前置条件的候选显示“需要确认条件”，未覆盖组合明确显示暂无收录，不等同于无解。
+`problems/catalog.json` 是根目录结构化问题资料，含维度、快捷问题、方案匹配规则、前置条件和说明。`packages/core/src/problems.ts` 提供无 UI 的规则匹配，后续可供 CLI 或独立项目复用。未满足前置条件的候选显示“需要确认条件”，未覆盖组合明确显示暂无收录，不等同于无解。
 
 进一步独立项目时，可把方案拆成带输入/输出状态的能力步骤，再加入平台、权限、成本、质量与失败恢复约束。只有偏好和约束明确后才比较“最佳”；当前不做最优性评分，也不自动探测设备或执行工具。
 
@@ -108,12 +108,14 @@ curl 场景要求 >= 7.76.0（--fail-with-body），JSON 场景 >= 7.82.0（--js
 
 生成的 Schema 为各层固定字段提供中文 `title`、`description`，并为部分字段提供 `examples`，供 IDE 悬停和补全提示。提示维护在 Zod 源文件中，运行 `pnpm schema:generate` 同步；这些注解不会自动填入业务默认值，也不会放宽校验规则。
 
-`packages/schema/src/index.ts` 是内容模型的唯一结构定义，使用 Zod 4 严格对象并导出推断的 TypeScript 类型。`references.ts` 负责跨记录语义检查。此次 TypeScript 覆盖模型、校验和生成脚本；现有网页、CLI 与 core 的业务 JS 保留。
+`packages/schema/src/index.ts` 是内容模型的唯一结构定义，使用 Zod 4 严格对象并导出推断的 TypeScript 类型。`references.ts` 负责跨记录语义检查。网页使用 Vue 3 单文件组件（`.vue`）和 `<script setup lang="ts">`；按页面、通用组件和响应式状态组织。网页、CLI、core、模型、构建脚本及测试均使用 TypeScript，并纳入 strict 类型检查，网页模板额外通过 `vue-tsc` 检查。core 与 CLI 从 src 编译到忽略的 dist 目录；npm 包提供 JavaScript，core 同时提供类型声明。网页由 Vite 编译，保留适配 GitHub Pages 的 hash 路由；开发和测试命令会先准备依赖包。Web 单独固定 TypeScript 5.9，以兼容当前 vue-tsc；根目录的 TypeScript 7 用于其余包。
 
 ```sh
 pnpm schema:generate  # 模型变化后重新生成 JSON Schema，生成物需随代码维护
 pnpm check:data       # 校验全部内容及跨文件引用，并检查 Schema 是否过期
-pnpm typecheck        # TypeScript strict 类型检查
+pnpm typecheck        # 准备依赖包并执行 TypeScript strict 类型检查
+pnpm format           # 统一源码、Vue 模板、HTML 与 CSS 的缩进和换行
+pnpm format:check     # 检查格式
 pnpm build:schemas    # 构建模型包及 .d.ts 到忽略的 dist 目录
 pnpm test             # 类型、数据、模型反例和现有功能测试
 ```

@@ -3,15 +3,18 @@
   "name": "@cmdhelper/schema",
   "version": "0.1.0",
   "type": "module",
-  "private": true,
   "exports": {
     "types": "./dist/index.d.ts",
     "import": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "prepack": "pnpm build"
   },
   "dependencies": {
     "zod": "^4.0.0"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }

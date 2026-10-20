@@ -4,10 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "cmdhelper": "bin/cmdhelper.js"
+    "cmdhelper": "dist/cmdhelper.js"
   },
   "files": [
-    "bin"
+    "dist"
   ],
   "engines": {
     "node": ">=22"
@@ -15,5 +15,9 @@
   "dependencies": {
     "@cmdhelper/core": "workspace:^"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepack": "pnpm --dir ../.. prepare:packages"
+  }
 }

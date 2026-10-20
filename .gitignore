@@ -3,3 +3,5 @@ node_modules/
 .DS_Store
 artifacts/
 packages/schema/dist/
+packages/core/dist/
+apps/cli/dist/
